@@ -7,3 +7,5 @@ data/*
 *.out
 *.pdf
 *.toc
+*.zip
+__pycache__/

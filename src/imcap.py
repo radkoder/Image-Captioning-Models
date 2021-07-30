@@ -1,49 +1,7 @@
-import getopt,sys,zipfile,os,json
-from tensorflow.keras.applications.vgg16 import VGG16
-from tensorflow.keras.preprocessing.image import load_img
-from tensorflow.keras.preprocessing.image import img_to_array
-from tensorflow.keras.applications.vgg16 import preprocess_input
-from tensorflow.keras.models import Model
-import progressbar
-def print_bar(max,i,what,status,length=20):
-    r = int(i*length/max)
-    s = '.'*r + ' '*(length-r)
-    print(len(f'{what}:[{s}][{i}/{max}] => {status}          ')*' ',end='\r')
-    print(f'{what}:[{s}][{i}/{max}] => {status}',end='\r')
-
-feat_extractors = ['VGG16']
-feat_used = 'VGG16'
-expected_size = {
-    'VGG16': (224,224)
-}
-def get_image_feature_extractor():
-    model = VGG16()
-    model = Model(inputs=model.inputs, outputs=model.layers[-2].output)
-    return model
-
-def preprocess_images(zippath):
-    print(f'Opening: {zippath}')
-    z = zipfile.ZipFile(zippath)
-    m = get_image_feature_extractor()
-    feats = dict()
-    print(f'Beginning image processing')
-    namelist = z.namelist()
-    for i in range(len(namelist)):
-        if namelist[i].endswith('/'): continue
-        path = z.extract(namelist[i])
-        print_bar(len(namelist),i,"Processing files",path)
-        img = img_to_array(load_img(path,target_size=expected_size[feat_used]))
-        img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
-        img = preprocess_input(img)
-        feat = m.predict(img, verbose=0)
-        im_name = os.path.split(path)[1].split('.')[0]
-        feats[im_name] = feat.tolist()[0]
-        os.remove(path)
-    with open( "VGG16-feats.json" , "w" ) as write:
-        json.dump( feats , write )
-
-
-    
+import getopt,sys
+import words, files, images, models
+import utils as my_utils
+from tensorflow.keras.callbacks import ModelCheckpoint
 def build_model():
     pass
 def train_main():
@@ -56,4 +14,38 @@ def build_image_feature_model():
 def build_word_encoding_model():
     pass
 
-preprocess_images('../data/Flickr8k_Dataset.zip')
+#Takes about an two hours
+#images.preprocess('../data/Flickr8k_Dataset.zip')
+# -> output in VGG16-feats.json
+
+#Takes 5 s 
+words.preprocess('../data/Flickr8k.token.txt',"words.json",'seqs.json')
+# -> output in words.json
+
+train_set = files.load_setfile('../data/Flickr_8k.trainImages.txt')
+print(f'Loading dataset of {len(train_set)} examples')
+
+word_seqs,seq_size,vocab_size = words.load_seqs('seqs.json',subset=train_set)
+image_set = images.load_featmap('VGG16-feats.json',subset=train_set)
+print(f'Image train set length: {len(image_set)}')
+print(f'Max seq size is: {seq_size} words')
+print(f'Vocabulary size: {vocab_size} words')
+
+gen = models.make_input_set_generator(word_seqs,image_set,vocab_size,seq_size)
+model = models.make_model(seq_size,vocab_size,4096)
+
+filepath = 'model-ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.pb'
+checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+
+model.fit(x=gen,y=None,steps_per_epoch=len(train_set),epochs=10,workers=4,callbacks=[checkpoint])
+
+model.save('word_generation_model_fin')
+# Xs, Ys = next(gen)
+# print(f'Generated {len(Ys)} samples')
+# print(f'Sample dimentions: image features: {Xs[0].shape} \t word vectors: {Xs[1].shape} \t result vector: {Ys.shape}')
+
+# imXs, wdXs, Ys = models.make_input_set(word_seqs,image_set,vocab_size,seq_size)
+# print(f'Generated {len(Ys)} samples')
+# print(f'Sample dimentions: image features: {imXs.shape} \t word vectors: {wdXs.shape} \t result vector: {Ys.shape}')
+
+ls
