@@ -1,19 +1,21 @@
 import zipfile,os,json
-import models,files
-from stage import *
+from imcap import stage,models,files
 FeatMap = dict[str,list[float]]
 def preprocess(zippath, feat_extractor, outpath):
     from tensorflow.keras.preprocessing.image import load_img
     from tensorflow.keras.preprocessing.image import img_to_array
     from tensorflow.keras.applications.vgg16 import preprocess_input
 
+    if files.is_newer_than(zippath,outpath):
+        print(f'Image features are up to date ({outpath})...')
+        return
     print(f'Opening: {zippath}')
     z = zipfile.ZipFile(zippath)
-    m = models.get_image_feature_extractor()
+    m = models.get_image_feature_extractor(feat_extractor)
     feats = dict()
     print(f'Beginning image processing')
     namelist = z.namelist()
-    bar = ProgressBar("Processing files",len(namelist))
+    bar = stage.ProgressBar("Processing files",len(namelist))
     for i in range(len(namelist)):
         if namelist[i].endswith('/'): continue
         path = z.extract(namelist[i])
@@ -21,6 +23,7 @@ def preprocess(zippath, feat_extractor, outpath):
         bar.update(im_name)
         img = img_to_array(load_img(path,target_size=models.expected_size[feat_extractor]))
         img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
+        print(img.shape)
         img = preprocess_input(img)
         feat = m.predict(img, verbose=0)
         
@@ -29,7 +32,7 @@ def preprocess(zippath, feat_extractor, outpath):
     with open( outpath , "w" ) as write:
         json.dump( feats , write )
 
-@measure("Loading features")
+@stage.measure("Loading features")
 def load_featmap(infile:str, subset: set[str]= None) -> FeatMap:
     fm : FeatMap
     with open(infile, "r") as read:

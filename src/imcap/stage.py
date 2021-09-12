@@ -33,7 +33,7 @@ class ProgressBar:
         r = int(self.count*self.barlen/self.max)
         s = '.'*r + ' '*(self.barlen-r)
         diff = self.currTime - self.lastTime
-        outstr = f'{self.title}:[{s}][{self.count}/{self.max}] => {status} [{stostr(int(diff))}][eta: {stostr(int(diff*self.max))}]'
+        outstr = f'{self.title}:[{s}][{self.count}/{self.max}] => {status} [{stostr(int(diff))}][eta: {stostr(int(diff*(self.max-self.count)))}]'
         print(outstr+'   ',end='\r')
     def end(self) -> None:
         self.print_bar("DONE")

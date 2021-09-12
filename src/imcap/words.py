@@ -1,7 +1,7 @@
-from files import is_newer_than,read_lines
-from stage import measure
+from imcap.files import is_newer_than,read_lines
+from imcap.stage import measure
+from imcap import utils
 import string, json
-import utils
 import numpy as np
 
 DescMap = dict[str, list[str]]
