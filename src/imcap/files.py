@@ -1,4 +1,4 @@
-import os,zipfile
+import os,zipfile,shutil
 def get_filename(path: str) -> str:
     return os.path.split(path)[1].split('.')[0]
 
@@ -28,3 +28,6 @@ def delete(files: list[str]) -> None:
     for f in files:
         print(f'Removing file {f}')
         os.remove(f)
+def move(src, dst):
+    print(f"Moving file {src} to {dst}")
+    shutil.move(src,dst)
