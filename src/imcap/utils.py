@@ -1,11 +1,11 @@
 
-from typing import Any, AnyStr
-IntList2D = list[list[int]]
-IntList = list[int]
-def flatten(t : list[list[Any]]) -> list[Any]:
+from typing import Any, AnyStr, List, Tuple
+IntList2D = List[List[int]]
+IntList = List[int]
+def flatten(t : List[List[Any]]) -> List[Any]:
     return [item for sublist in t for item in sublist]
 
-def make_divs(arr:list[Any]) -> list[tuple[list[Any],list[Any]]]:
+def make_divs(arr:List[Any]) -> List[Tuple[List[Any],List[Any]]]:
     A,B = [],[]
     for i in range(1,len(arr)):
         a,b = arr[:i],arr[i]
@@ -13,9 +13,9 @@ def make_divs(arr:list[Any]) -> list[tuple[list[Any],list[Any]]]:
         B.append(b)
     return A,B
 
-def max_len(arr: list[Any]) -> int:
+def max_len(arr: List[Any]) -> int:
     return max(len(d) for d in arr)
-def unzip_xy_pairs(arr:list[tuple[ IntList2D, IntList ]]) -> tuple[IntList2D, IntList]:
+def unzip_xy_pairs(arr:List[Tuple[ IntList2D, IntList ]]) -> Tuple[IntList2D, IntList]:
     return flatten([s[0] for s in arr]), flatten([s[1] for s in arr])
 def peek(arr,n=3):
     for i in range(n):

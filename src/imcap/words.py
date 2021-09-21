@@ -3,11 +3,11 @@ from imcap.stage import measure
 from imcap import utils
 import string, json
 import numpy as np
-
-DescMap = dict[str, list[str]]
+from typing import *
+DescMap = Dict[str, List[str]]
 ENDSEQ = 'endseq'
 STARTSEQ = 'startseq'
-def make_descmap(lines : list[str],separator : str) -> DescMap:
+def make_descmap(lines : List[str],separator : str) -> DescMap:
     descs = dict()
     for line in lines:
         label, words = line.split(separator)
@@ -18,7 +18,7 @@ def make_descmap(lines : list[str],separator : str) -> DescMap:
     return descs
 
 
-def make_vocab(descmap: DescMap) -> set[str]:
+def make_vocab(descmap: DescMap) -> Set[str]:
     all_words = []
     for desclist in descmap.values():
         desc = ' '.join(desclist)
@@ -27,7 +27,7 @@ def make_vocab(descmap: DescMap) -> set[str]:
     return set(all_words)
 
 @measure("Sequencing descriptions")
-def make_seqs(descmap: DescMap) -> dict[str,list[tuple[list[list[int]],list[int]]]]:
+def make_seqs(descmap: DescMap) -> Dict[str,List[Tuple[List[List[int]],List[int]]]]:
     from tensorflow.keras.preprocessing.text import Tokenizer
 
     all_desc_list = utils.flatten(descmap.values())
@@ -47,7 +47,7 @@ def save_seqs(word_seqs, filepath:str, v_size = None, max_desc = None):
         json.dump(obj, write)
 
 @measure("Loading sequences")
-def load_seqs(infile, subset: set[str] = None):
+def load_seqs(infile, subset: Set[str] = None):
     seqs = dict()
     with open(infile, "r") as read:
         seqs = json.load(read)
@@ -56,7 +56,7 @@ def load_seqs(infile, subset: set[str] = None):
     return seqs['seqs'], seqs['maxseq'], seqs['vsize']
 
 
-def clean_wordlist(wordlist: list[str]) -> list[str]:
+def clean_wordlist(wordlist: List[str]) -> List[str]:
     transtable = str.maketrans('','',string.punctuation) 
     c = [word.lower().translate(transtable) for word in wordlist]
     c = [word for word in c if len(word) > 1 and word.isalpha()]
@@ -75,6 +75,7 @@ def preprocess(infile, descfile='words.json', seqfile='seqs.json'):
         desc = make_descmap(lines,'\t')
         save_descmap(desc,descfile)
     else:
+        desc = load_descmap(descfile)
         print(f'Descriptions are up to date ({descfile})...')
     if not is_newer_than(descfile, seqfile):
         print(f'Updating sequences file ({seqfile})...')
@@ -84,10 +85,8 @@ def preprocess(infile, descfile='words.json', seqfile='seqs.json'):
         print(f'Sequences are up to date ({seqfile})...')
     
 
-    
-
 @measure("Loading descriptions")
-def load_descmap(infile: str, subset : set[str] = None) -> DescMap :
+def load_descmap(infile: str, subset : Set[str] = None) -> DescMap :
     dm : DescMap
     with open(infile, "r") as read:
         dm = json.load(read)

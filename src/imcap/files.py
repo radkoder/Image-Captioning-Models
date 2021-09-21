@@ -1,4 +1,5 @@
 import os,zipfile,shutil
+from typing import *
 def get_filename(path: str) -> str:
     return os.path.split(path)[1].split('.')[0]
 
@@ -9,22 +10,22 @@ def is_newer_than(reference, file) -> bool:
     else:
         return os.stat(reference).st_mtime <= os.stat(file).st_mtime 
 
-def read_lines(filepath: str) -> list[str]:
+def read_lines(filepath: str) -> List[str]:
     with open( filepath , "r" ) as read:
         text = read.read().splitlines()
     return text
 
-def load_setfile(filename: str) -> set[str]:
+def load_setfile(filename: str) -> Set[str]:
     return {get_filename(s) for s in read_lines(filename)}
 
-def unpack(zippath: str,files: list[str]) -> None:
+def unpack(zippath: str,files: List[str]) -> None:
     with zipfile.ZipFile(zippath) as z:
         dest = os.path.dirname(os.path.abspath(zippath))
         for f in files:
             print(f'Unpacking {f} from {zippath} to {dest}')
             z.extract(f,dest)
 
-def delete(files: list[str]) -> None:
+def delete(files: List[str]) -> None:
     for f in files:
         print(f'Removing file {f}')
         os.remove(f)

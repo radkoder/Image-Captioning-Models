@@ -1,6 +1,7 @@
 import zipfile,os,json
 from imcap import stage,models,files
-FeatMap = dict[str,list[float]]
+from typing import *
+FeatMap = Dict[str,List[float]]
 def preprocess(zippath, feat_extractor, outpath):
     from tensorflow.keras.preprocessing.image import load_img
     from tensorflow.keras.preprocessing.image import img_to_array
@@ -23,7 +24,6 @@ def preprocess(zippath, feat_extractor, outpath):
         bar.update(im_name)
         img = img_to_array(load_img(path,target_size=models.expected_size[feat_extractor]))
         img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
-        print(img.shape)
         img = preprocess_input(img)
         feat = m.predict(img, verbose=0)
         
@@ -33,7 +33,7 @@ def preprocess(zippath, feat_extractor, outpath):
         json.dump( feats , write )
 
 @stage.measure("Loading features")
-def load_featmap(infile:str, subset: set[str]= None) -> FeatMap:
+def load_featmap(infile:str, subset: Set[str]= None) -> FeatMap:
     fm : FeatMap
     with open(infile, "r") as read:
         fm = json.load(read)

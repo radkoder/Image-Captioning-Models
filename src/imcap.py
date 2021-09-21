@@ -13,6 +13,7 @@ seq_file = f'{artifact_dir}/seqs.json'
 word_file = f'{artifact_dir}/words.json'
 feat_file = f'{artifact_dir}/feats.json'
 
+
 main.make_main(f'data {dataset_name}')
 main.make_main(f'feats {images_zip} {feat_net} {feat_file}'.split())
 main.make_main(f'seqs {descriptions_file} {word_file} {seq_file}'.split())
