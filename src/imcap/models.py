@@ -2,18 +2,31 @@ import datetime
 import numpy as np
 from numpy.lib import utils
 from imcap import stage, utils 
-
-feat_extractors = ['VGG16']
+from tensorflow.keras.applications import vgg16, vgg19
+feat_extractors = ['VGG16', 'VGG19']
 expected_size = {
-    'VGG16': (224,224)
+    'VGG16': (224,224),
+    'VGG19': (244,244)
+}
+preproc = {
+    'VGG16': vgg16.preprocess_input,
+    'VGG19': vgg19.preprocess_input
+}
+output_size = {
+    'VGG16': 4096,
+    'VGG19': 4096
 }
 @stage.measure("Loading feature extractor")
-def get_image_feature_extractor(name):
+def get_image_feature_extractor(name: str):
     from tensorflow.keras.models import Model
-    from tensorflow.keras.applications.vgg16 import VGG16
+    name = name.upper()
     if name == 'VGG16' or name == 'VGG-16':
-        model = VGG16()
+        model = vgg16.VGG16()
         model = Model(inputs=model.inputs, outputs=model.layers[-2].output)
+        return model
+    elif name == 'VGG19' or name == 'VGG-19':
+        model = vgg19.VGG19()
+        model = Model(inputs = model.inputs, outputs=model.layers[-2].output)
         return model
     else:
         return None

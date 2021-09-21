@@ -22,11 +22,7 @@ def preprocess(zippath, feat_extractor, outpath):
         path = z.extract(namelist[i])
         im_name = files.get_filename(path)
         bar.update(im_name)
-        img = img_to_array(load_img(path,target_size=models.expected_size[feat_extractor]))
-        img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
-        img = preprocess_input(img)
-        feat = m.predict(img, verbose=0)
-        
+        feat = preprocess_image(path,m,models.preproc[feat_extractor],models.expected_size[feat_extractor])
         feats[im_name] = feat.tolist()[0]
         os.remove(path)
     with open( outpath , "w" ) as write:
@@ -40,3 +36,12 @@ def load_featmap(infile:str, subset: Set[str]= None) -> FeatMap:
     if subset != None:
         fm = {k:v for k,v in fm.items() if k in subset}
     return fm
+
+def preprocess_image(filename: str, model, prefunc : Callable, dst_size : Tuple[int , int]):
+    from tensorflow.keras.preprocessing.image import load_img
+    from tensorflow.keras.preprocessing.image import img_to_array
+    img = img_to_array(load_img(filename,target_size=dst_size))
+    img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
+    img = prefunc(img)
+    return model.predict(img, verbose=0)
+
