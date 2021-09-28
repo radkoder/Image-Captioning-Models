@@ -20,21 +20,27 @@ class ProgressBar:
         self.count = 0
         self.meanTime = 0
         self.totalTime = 0
-        self.printQueue = []
+        self.diffs = []
         self.lastTime = 0
         self.currTime = time.time()
 
-    def update(self,status) -> None:
+    def update(self,status, currCount = None, count_delta = 1) -> None:
         self.lastTime = self.currTime
         self.currTime = time.time()
-        self.count += 1
+        if currCount == None:
+            self.count += count_delta
+        else:
+            self.count = currCount
         self.print_bar(status)
+
     def print_bar(self,status) -> None:
         r = int(self.count*self.barlen/self.max)
         s = '.'*r + ' '*(self.barlen-r)
         diff = self.currTime - self.lastTime
-        outstr = f'{self.title}:[{s}][{self.count}/{self.max}] => {status} [{stostr(int(diff))}][eta: {stostr(int(diff*(self.max-self.count)))}]'
+        self.meanTime = (diff + (self.count-1)*self.meanTime)/self.count
+        outstr = f'{self.title}:[{s}][{self.count}/{self.max}] => {status} [{stostr(int(diff))}][eta: {stostr(int(self.meanTime*(self.max-self.count)))}]'
         print(outstr+'   ',end='\r')
+
     def end(self) -> None:
         self.print_bar("DONE")
         print('')

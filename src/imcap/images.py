@@ -15,17 +15,16 @@ def preprocess(zippath, feat_extractor, outpath):
     m = models.get_image_feature_extractor(feat_extractor)
     feats = dict()
     print(f'Beginning image processing')
-    namelist = z.namelist()
+    namelist = [n for n in z.namelist() if not is_dir(n)]
     bar = stage.ProgressBar("Processing files",len(namelist))
     for i in range(len(namelist)):
-        if namelist[i].endswith('/'): continue
         path = z.extract(namelist[i])
         im_name = files.get_filename(path)
         bar.update(im_name)
         feat = preprocess_image(path,m,models.preproc[feat_extractor],models.expected_size[feat_extractor])
         feats[im_name] = feat.tolist()[0]
         os.remove(path)
-    with open( outpath , "w" ) as write:
+    with files.write(outpath) as write:
         json.dump( feats , write )
 
 @stage.measure("Loading features")
@@ -45,3 +44,5 @@ def preprocess_image(filename: str, model, prefunc : Callable, dst_size : Tuple[
     img = prefunc(img)
     return model.predict(img, verbose=0)
 
+def is_dir(name : str):
+    return (name.endswith('/')) or (name.startswith('__MACOSX'))

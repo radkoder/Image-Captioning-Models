@@ -36,7 +36,11 @@ def make_main(args):
     elif(args[0] == 'data'):
         dataset_name = args[1]
         if dataset_name == 'Flickr8k':
-            unpack('../data/{dataset_name}_text.zip',['Flickr_8k.testImages.txt','Flickr8k.token.txt'])
+            unpack(f'data/{dataset_name}_text.zip',['Flickr_8k.testImages.txt','Flickr8k.token.txt', 'Flickr_8k.trainImages.txt'])
+        else:
+            print(f"Unknown dataset {dataset_name}")
+    else:
+        print(f"primary instruction unknown: {args[0]}")
         
 
 

@@ -14,7 +14,7 @@ word_file = f'{artifact_dir}/words.json'
 feat_file = f'{artifact_dir}/feats.json'
 
 
-main.make_main(f'data {dataset_name}')
+main.make_main(f'data {dataset_name}'.split())
 main.make_main(f'feats {images_zip} {feat_net} {feat_file}'.split())
 main.make_main(f'seqs {descriptions_file} {word_file} {seq_file}'.split())
-main.train_main(f'--setfile={trainset_file} --featfile={feat_file} --seqfile={seq_file} --dry-run'.split())
+main.train_main(f'--setfile={trainset_file} --featfile={feat_file} --seqfile={seq_file}'.split())
