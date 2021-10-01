@@ -1,7 +1,8 @@
 import datetime
+from typing import Callable
 import numpy as np
 from numpy.lib import utils
-from imcap import stage, utils 
+from imcap import stage, utils, words
 from tensorflow.keras.applications import vgg16, vgg19
 feat_extractors = ['VGG16', 'VGG19']
 expected_size = {
@@ -91,12 +92,41 @@ def make_model(seq_len,word_vec_len, feat_len):
     outputs = Dense(word_vec_len, activation='softmax')(decoder2)
 
     model = Model(inputs=[inputs1, inputs2], outputs=outputs)
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'], run_eagerly=True)
     return model
 
-def get_callbacks():
+def get_callbacks(model_name='my_model',checkpt_dir='checkpoints'):
     import tensorflow as tf
     log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir=log_dir, histogram_freq=1)
-    return [tensorboard_callback]
+    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath= checkpt_dir + f'/{model_name}' + "_{epoch}",
+        save_best_only=True,
+        monitor='val_loss',
+        verbose=1
+        )
+    return [tensorboard_callback, checkpoint_callback]
+
+def save_model(model, dirname):
+    import tensorflow as tf
+    tf.keras.models.save_model(model,filepath=dirname,include_optimizer=False)
+
+def load_model(dirname):
+    import tensorflow as tf
+    return tf.keras.models.load_model(dirname)
+
+def apply_desc_model(model, input, tokenizer, times: int) -> str:
+    from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+    from numpy import argmax
+    text = words.STARTSEQ
+    for i in range(times):
+        seq = tokenizer.texts_to_sequences([text])[0]
+        seq = pad_sequences([seq],maxlen=times)
+        y = model.predict([input,seq])
+        y = argmax(y)
+        word = words.word_for_id(y,tokenizer)
+        if word is None or word == words.ENDSEQ:
+            break
+        text += ' ' + word
+    return text

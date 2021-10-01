@@ -1,4 +1,4 @@
-from imcap.files import is_newer_than,read_lines
+from imcap.files import is_newer_than,read_lines,write
 from imcap.stage import measure
 from imcap import utils
 import string, json
@@ -36,7 +36,7 @@ def make_seqs(descmap: DescMap) -> Dict[str,List[Tuple[List[List[int]],List[int]
     tokenizer.fit_on_texts(all_desc_list)
     vocab_size = len(tokenizer.word_index)+1
 
-    return {key:[utils.make_divs(s) for s in tokenizer.texts_to_sequences_generator(descs)] for key,descs in descmap.items()}, max_desc_size, vocab_size
+    return {key:[utils.make_divs(s) for s in tokenizer.texts_to_sequences_generator(descs)] for key,descs in descmap.items()}, max_desc_size, vocab_size,tokenizer
 
 def save_seqs(word_seqs, filepath:str, v_size = None, max_desc = None):
     obj = dict()
@@ -48,6 +48,7 @@ def save_seqs(word_seqs, filepath:str, v_size = None, max_desc = None):
 
 @measure("Loading sequences")
 def load_seqs(infile, subset: Set[str] = None):
+    print(f'Loading sequences from {infile}' + (f' subset size: {len(subset)}' if subset != None else ''))
     seqs = dict()
     with open(infile, "r") as read:
         seqs = json.load(read)
@@ -67,7 +68,7 @@ def save_descmap(descmap: DescMap, filepath:str) -> None:
         json.dump( descmap , write )
 
 @measure("Preprocessing captions")
-def preprocess(infile, descfile='words.json', seqfile='seqs.json'):
+def preprocess(infile, descfile='words.json', seqfile='seqs.json',tokenfile='tokenizer.json'):
     if not is_newer_than(infile,descfile):
         print(f'Updating description file ({descfile})...')
         lines = read_lines(infile)
@@ -79,8 +80,9 @@ def preprocess(infile, descfile='words.json', seqfile='seqs.json'):
         
     if not is_newer_than(descfile, seqfile):
         print(f'Updating sequences file ({seqfile})...')
-        sqs,slen,vsize = make_seqs(desc)
+        sqs,slen,vsize,tok = make_seqs(desc)
         save_seqs(sqs,seqfile,v_size=vsize, max_desc=slen)
+        write(tokenfile,tok.to_json())
     else:
         print(f'Sequences are up to date ({seqfile})...')
     
@@ -94,3 +96,11 @@ def load_descmap(infile: str, subset : Set[str] = None) -> DescMap :
         dm = {k:v for k,v in dm.items() if k in subset}
     return dm
 
+def word_for_id(integer, tokenizer):
+	for word, index in tokenizer.word_index.items():
+		if index == integer:
+			return word
+	return None
+def load_tokenizer(config_path: str):
+    from tensorflow.keras.preprocessing.text import tokenizer_from_json
+    return tokenizer_from_json(files.read(token_path))
