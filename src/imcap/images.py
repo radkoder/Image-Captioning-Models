@@ -3,10 +3,6 @@ from imcap import stage,models,files
 from typing import *
 FeatMap = Dict[str,List[float]]
 def preprocess(zippath, feat_extractor, outpath):
-    from tensorflow.keras.preprocessing.image import load_img
-    from tensorflow.keras.preprocessing.image import img_to_array
-    from tensorflow.keras.applications.vgg16 import preprocess_input
-
     if files.is_newer_than(zippath,outpath):
         print(f'Image features are up to date ({outpath})...')
         return
@@ -29,6 +25,7 @@ def preprocess(zippath, feat_extractor, outpath):
 
 @stage.measure("Loading features")
 def load_featmap(infile:str, subset: Set[str]= None) -> FeatMap:
+    print(f'Loading features from {infile}')
     fm : FeatMap
     with open(infile, "r") as read:
         fm = json.load(read)
