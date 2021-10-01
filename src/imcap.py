@@ -19,8 +19,8 @@ feat_file = f'{artifact_dir}/feats.json'
 token_config = f'{artifact_dir}/tokenizer.json'
 
 
-#main.make_main(f'data {dataset_name}'.split())
-#main.make_main(f'feats {images_zip} {feat_net} {feat_file}'.split())
-#main.make_main(f'seqs {descriptions_file} {word_file} {seq_file} {token_config}'.split())
-#main.train_main(f'--setfile={trainset_file} --featfile={feat_file} --seqfile={seq_file} --output={desc_dir}'.split())
+main.make_main(f'data {dataset_name}'.split())
+main.make_main(f'feats {images_zip} {feat_net} {feat_file}'.split())
+main.make_main(f'seqs {descriptions_file} {word_file} {seq_file} {token_config}'.split())
+main.train_main(f'--setfile={trainset_file} --featfile={feat_file} --seqfile={seq_file} --output={desc_dir}'.split())
 main.apply_main(f'{test_image} --fex-name={feat_net} --model={desc_dir} --tokenizer={token_config}'.split())

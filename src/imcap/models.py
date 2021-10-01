@@ -110,7 +110,7 @@ def get_callbacks(model_name='my_model',checkpt_dir='checkpoints'):
 
 def save_model(model, dirname):
     import tensorflow as tf
-    tf.keras.models.save_model(model,filepath=dirname,include_optimizer=False)
+    tf.keras.models.save_model(model,filepath=dirname)
 
 def load_model(dirname):
     import tensorflow as tf

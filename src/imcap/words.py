@@ -1,6 +1,6 @@
-from imcap.files import is_newer_than,read_lines,write
+from imcap.files import is_newer_than,read_lines
 from imcap.stage import measure
-from imcap import utils
+from imcap import utils, files
 import string, json
 import numpy as np
 from typing import *
@@ -82,7 +82,7 @@ def preprocess(infile, descfile='words.json', seqfile='seqs.json',tokenfile='tok
         print(f'Updating sequences file ({seqfile})...')
         sqs,slen,vsize,tok = make_seqs(desc)
         save_seqs(sqs,seqfile,v_size=vsize, max_desc=slen)
-        write(tokenfile,tok.to_json())
+        files.write(tokenfile,tok.to_json())
     else:
         print(f'Sequences are up to date ({seqfile})...')
     
@@ -103,4 +103,4 @@ def word_for_id(integer, tokenizer):
 	return None
 def load_tokenizer(config_path: str):
     from tensorflow.keras.preprocessing.text import tokenizer_from_json
-    return tokenizer_from_json(files.read(token_path))
+    return tokenizer_from_json(files.read(config_path))
