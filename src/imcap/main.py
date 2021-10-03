@@ -1,4 +1,4 @@
-import getopt,sys
+import getopt,sys, itertools
 from imcap.files import unpack
 from imcap import *
 
@@ -68,20 +68,21 @@ def train_main(args):
 
    
     train_set = files.load_setfile(setfile)
-    word_seqs,seq_size,vocab_size = words.load_seqs(seqfile,subset=train_set)
+    train_set = set(itertools.islice(train_set, 100))
+    word_seqs,sentence_len,vocab_size = words.load_seqs(seqfile,subset=train_set)
     image_set = images.load_featmap(featfile,subset=train_set)
 
     print(f'Image train set length: {len(image_set)}')
-    print(f'Max seq size is: {seq_size} words')
+    print(f'Max seq size is: {sentence_len} words')
     print(f'Vocabulary size: {vocab_size} words')
 
-    model = models.make_model(seq_size,vocab_size,feat_size) #TODO parametrize
+    model = models.make_model(sentence_len,vocab_size,feat_size) 
 
-    X1,X2,Y = models.make_input_set(word_seqs,image_set,vocab_size,seq_size)
+    X1,X2,Y = models.make_input_set(word_seqs,image_set,vocab_size,sentence_len)
     if('--dry-run' in opts.keys()):
         print("Model fitting would happen here...")
     else:
-        model.fit(x=[X1,X2],y=Y,epochs=1,workers=4,callbacks=models.get_callbacks())
+        model.fit(x=[X1,X2],y=Y,epochs=1,workers=8,callbacks=models.get_callbacks())
         models.save_model(model, out_name)
 
 def apply_main(args):
@@ -93,15 +94,10 @@ def apply_main(args):
     fex_name = opts.get('--fex-name')
     desc_name = opts.get('--model')
     token_path = opts.get('--tokenizer')
-    fex = models.get_image_feature_extractor(fex_name)
-    feats = images.preprocess_image(img_name,fex,models.preproc[fex_name],models.expected_size[fex_name])
+    feats = images.preprocess_image(img_name,fex_name)
     desc = models.load_model(desc_name)
     token = tokenizer_from_json(files.read(token_path))
     print(models.apply_desc_model(desc,feats,token,34))
-
-
-    
-    
     
 def main(argv=sys.argv):
     if argv[1] == 'make':

@@ -33,9 +33,12 @@ def load_featmap(infile:str, subset: Set[str]= None) -> FeatMap:
         fm = {k:v for k,v in fm.items() if k in subset}
     return fm
 
-def preprocess_image(filename: str, model, prefunc : Callable, dst_size : Tuple[int , int]):
+def preprocess_image(filename: str, model_name: str):
     from tensorflow.keras.preprocessing.image import load_img
     from tensorflow.keras.preprocessing.image import img_to_array
+    model = models.get_image_feature_extractor(model_name)
+    prefunc = models.preproc[model_name]
+    dst_size = models.expected_size[model_name]
     img = img_to_array(load_img(filename,target_size=dst_size))
     img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
     img = prefunc(img)

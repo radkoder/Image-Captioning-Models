@@ -1,4 +1,8 @@
 from imcap import main
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+import tensorflow as tf
+#tf.config.run_functions_eagerly()
 
 data_dir = 'data'
 feat_net = 'VGG16'
