@@ -17,65 +17,30 @@ output_size = {
     'VGG16': 4096,
     'VGG19': 4096
 }
-
+VGG16_model = None
+VGG19_model = None
 @stage.measure("Loading feature extractor")
 def get_image_feature_extractor(name: str):
     from tensorflow.keras.models import Model
     name = name.upper()
     if name == 'VGG16' or name == 'VGG-16':
+        if VGG16_model != None:
+            return VGG16_model
         model = vgg16.VGG16()
         model = Model(inputs=model.inputs, outputs=model.layers[-2].output)
         return model
     elif name == 'VGG19' or name == 'VGG-19':
+        if VGG19_model != None:
+            return VGG19_model
         model = vgg19.VGG19()
         model = Model(inputs = model.inputs, outputs=model.layers[-2].output)
         return model
     else:
         return None
 
-@stage.measure("Consolidating dataset")
-def make_input_set(word_seqs, image_feats, vocab_size,seq_size):
-    from tensorflow.keras.preprocessing.sequence import pad_sequences
-    from tensorflow.keras.utils import to_categorical
-    Xs1,Xs2,Ys = [],[],[]
-    for key, imfeat in image_feats.items():
-        xs, ys = utils.unzip_xy_pairs(word_seqs[key])
-        # xs = pad_sequences(xs, maxlen=seq_size)
-        # ys = to_categorical(ys,num_classes=vocab_size)
-        Xs1 += [imfeat]*len(xs)
-        Xs2 += xs
-        Ys += ys
-    return np.array(Xs1), pad_sequences(Xs2, maxlen=seq_size), to_categorical(Ys, num_classes=vocab_size)
-
-@utils.threadsafe_generator
-def make_input_set_generator(word_seqs, image_feats, vocab_size,seq_size):
-    from tensorflow.keras.preprocessing.sequence import pad_sequences
-    from tensorflow.keras.utils import to_categorical
-    Xs1,Xs2,Ys = [],[],[]
-    while True:
-        for key, imfeat in image_feats.items():
-            xs, ys = utils.unzip_xy_pairs(word_seqs[key])
-            # xs = pad_sequences(xs, maxlen=seq_size)
-            # ys = to_categorical(ys,num_classes=vocab_size)
-            Xs1 = [imfeat]*len(xs)
-            Xs2 = xs
-            Ys = ys
-            yield ([np.array(Xs1), pad_sequences(Xs2, maxlen=seq_size)], to_categorical(Ys, num_classes=vocab_size))
-
-
-def seqs_to_vec(word_seqs, seq_size, vocab_size):
-    from tensorflow.keras.preprocessing.sequence import pad_sequences
-    from tensorflow.keras.utils import to_categorical
-    allXs = []
-    allYs = []
-    for xy_pairs in word_seqs.values():
-        Xs, Ys = utils.unzip_xy_pairs(xy_pairs)
-        allXs += Xs
-        allYs += Ys 
-    return pad_sequences(allXs, maxlen=seq_size), to_categorical(allYs,num_classes=vocab_size)
 
 @stage.measure("Constructing ANN model")
-def make_model(seq_len,word_vec_len, feat_len, embed_vec_len=256):
+def make_model(seq_len,vocab_size, feat_len, embed_vec_len=256):
     from tensorflow.keras.models import Model
     from tensorflow.keras.layers import Input,Dense,LSTM,Embedding,Dropout,Add
 
@@ -84,7 +49,7 @@ def make_model(seq_len,word_vec_len, feat_len, embed_vec_len=256):
     fe2 = Dense(embed_vec_len, activation='relu')(fe1)
 
     inputs2 = Input(shape=(seq_len,), name='seq_input')
-    se1 = Embedding(input_dim=word_vec_len,
+    se1 = Embedding(input_dim=vocab_size,
                     output_dim=embed_vec_len,
                     input_length=seq_len,
                     mask_zero=True,
@@ -94,10 +59,10 @@ def make_model(seq_len,word_vec_len, feat_len, embed_vec_len=256):
 
     decoder1 = Add()([fe2, se3])
     decoder2 = Dense(embed_vec_len, activation='relu')(decoder1)
-    outputs = Dense(word_vec_len, activation='softmax')(decoder2)
+    outputs = Dense(vocab_size, activation='softmax')(decoder2)
 
     model = Model(inputs=[inputs1, inputs2], outputs=outputs)
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'],steps_per_execution=2)
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
 def get_callbacks(model_name='my_model',checkpt_dir='checkpoints'):
@@ -106,7 +71,7 @@ def get_callbacks(model_name='my_model',checkpt_dir='checkpoints'):
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir=log_dir, histogram_freq=1)
     checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath= checkpt_dir + f'/{model_name}' + "_{epoch}",
+        filepath= f'{checkpt_dir}/{model_name}' + "_{epoch}",
         save_best_only=True,
         monitor='val_loss',
         verbose=1

@@ -1,3 +1,4 @@
+from collections import namedtuple
 from imcap.files import is_newer_than,read_lines
 from imcap.stage import measure
 from imcap import utils, files
@@ -5,6 +6,7 @@ import string, json
 import numpy as np
 from typing import *
 DescMap = Dict[str, List[str]]
+SeqInfo = namedtuple('SeqInfo', ['max_desc_size', 'vocab_size', 'tokenizer'])
 ENDSEQ = 'endseq'
 STARTSEQ = 'startseq'
 def make_descmap(lines : List[str],separator : str) -> DescMap:
@@ -27,7 +29,7 @@ def make_vocab(descmap: DescMap) -> Set[str]:
     return set(all_words)
 
 @measure("Sequencing descriptions")
-def make_seqs(descmap: DescMap) -> Dict[str,List[Tuple[List[List[int]],List[int]]]]:
+def make_seqs(descmap: DescMap) -> Tuple[Dict[str,List[Tuple[List[List[int]],List[int]]]],SeqInfo]:
     from tensorflow.keras.preprocessing.text import Tokenizer
 
     all_desc_list = utils.flatten(descmap.values())
@@ -36,13 +38,13 @@ def make_seqs(descmap: DescMap) -> Dict[str,List[Tuple[List[List[int]],List[int]
     tokenizer.fit_on_texts(all_desc_list)
     vocab_size = len(tokenizer.word_index)+1
 
-    return {key:[utils.make_divs(s) for s in tokenizer.texts_to_sequences_generator(descs)] for key,descs in descmap.items()}, max_desc_size, vocab_size,tokenizer
+    return {key:[utils.make_divs(s) for s in tokenizer.texts_to_sequences_generator(descs)] for key,descs in descmap.items()}, SeqInfo(max_desc_size, vocab_size, tokenizer)
 
-def save_seqs(word_seqs, filepath:str, v_size = None, max_desc = None):
+def save_seqs(word_seqs, filepath:str, seqinfo: SeqInfo):
     obj = dict()
     obj['seqs'] = word_seqs
-    obj['vsize'] = v_size if v_size is not None else 0
-    obj['maxseq'] = max_desc if max_desc is not None else 0
+    obj['vsize'] = seqinfo.vocab_size if seqinfo.vocab_size is not None else 0
+    obj['maxseq'] = seqinfo.max_desc_size if seqinfo.max_desc_size is not None else 0
     with open(filepath, "w") as write:
         json.dump(obj, write)
 
@@ -80,9 +82,9 @@ def preprocess(infile, descfile='words.json', seqfile='seqs.json',tokenfile='tok
         
     if not is_newer_than(descfile, seqfile):
         print(f'Updating sequences file ({seqfile})...')
-        sqs,slen,vsize,tok = make_seqs(desc)
-        save_seqs(sqs,seqfile,v_size=vsize, max_desc=slen)
-        files.write(tokenfile,tok.to_json())
+        sqs,seqinfo = make_seqs(desc)
+        save_seqs(sqs,seqfile,seqinfo)
+        files.write(tokenfile,seqinfo.tokenizer.to_json())
     else:
         print(f'Sequences are up to date ({seqfile})...')
     

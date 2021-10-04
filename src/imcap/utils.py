@@ -1,5 +1,8 @@
-
-from typing import Any, AnyStr, List, Tuple
+'''
+Pure python utilities for general use.
+'''
+from typing import Any, AnyStr, Dict, List, Tuple
+import itertools, sys
 IntList2D = List[List[int]]
 IntList = List[int]
 def flatten(t : List[List[Any]]) -> List[Any]:
@@ -47,4 +50,21 @@ def threadsafe_generator(f):
     def g(*a, **kw):
         return threadsafe_iter(f(*a, **kw))
     return g
+
+def grouper(iterable, n, fillval=None):
+    """From itertools recepies"""
+    #grouper('abcdefg',3,'x') -> abc def gxx
+    args = [iter(iterable)]*n
+    return itertools.zip_longest(*args, fillvalue=fillval)
+
+def print_sizes(*args):
+    '''
+    args - tuples in the form (label, object)
+    '''
+    tsize =0
+    for label, obj in args:
+        size = sum(map(sys.getsizeof,obj))
+        tsize += size
+        print(f'Size of {label} = {float(size)/(1024.0*1024.0*1024.0):.2f} GB')
+    print(f'Total size of in-memory data = {float(tsize)/(1024.0*1024.0*1024.0):.2f} GB')
 

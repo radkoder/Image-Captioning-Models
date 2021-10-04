@@ -1,6 +1,7 @@
 data/*
 models/*
 logs/
+checkpoints/
 *.json
 *.aux
 *.bbl

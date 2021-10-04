@@ -2,6 +2,7 @@ import zipfile,os,json
 from imcap import stage,models,files
 from typing import *
 FeatMap = Dict[str,List[float]]
+#todo add flipping images
 def preprocess(zippath, feat_extractor, outpath):
     if files.is_newer_than(zippath,outpath):
         print(f'Image features are up to date ({outpath})...')
@@ -17,7 +18,7 @@ def preprocess(zippath, feat_extractor, outpath):
         path = z.extract(namelist[i])
         im_name = files.get_filename(path)
         bar.update(im_name)
-        feat = preprocess_image(path,m,models.preproc[feat_extractor],models.expected_size[feat_extractor])
+        feat = preprocess_image_with_model(path,m,models.preproc[feat_extractor],models.expected_size[feat_extractor])
         feats[im_name] = feat.tolist()[0]
         os.remove(path)
     with files.write(outpath) as write:
@@ -39,6 +40,14 @@ def preprocess_image(filename: str, model_name: str):
     model = models.get_image_feature_extractor(model_name)
     prefunc = models.preproc[model_name]
     dst_size = models.expected_size[model_name]
+    img = img_to_array(load_img(filename,target_size=dst_size))
+    img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
+    img = prefunc(img)
+    return model.predict(img, verbose=0)
+
+def preprocess_image_with_model(filename: str, model,prefunc,dst_size):
+    from tensorflow.keras.preprocessing.image import load_img
+    from tensorflow.keras.preprocessing.image import img_to_array
     img = img_to_array(load_img(filename,target_size=dst_size))
     img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
     img = prefunc(img)
