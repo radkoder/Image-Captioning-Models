@@ -1,4 +1,4 @@
-import os,zipfile,shutil
+import os,zipfile,shutil,time
 from typing import *
 
 def get_filename(path: str) -> str:
@@ -10,6 +10,13 @@ def is_newer_than(reference, file) -> bool:
         return False
     else:
         return os.stat(reference).st_mtime <= os.stat(file).st_mtime 
+
+def age(file:str) -> int:
+    if not os.path.isfile(file):
+        print(f'No file {file} found')
+        return 0
+    else:
+        return time.time() - os.stat(file).st_mtime 
 
 def read(filepath: str) -> str:
     print(f"Reading file: {os.path.abspath(filepath)}")
@@ -39,7 +46,10 @@ def unpack(zippath: str,files: List[str]) -> None:
     with zipfile.ZipFile(zippath) as z:
         dest = os.path.dirname(os.path.abspath(zippath))
         for f in files:
-            print(f'Unpacking {f} from {zippath} to {dest}')
+            if os.path.isfile(f'{dest}\{f}'):
+                print(f'File {dest}\{f} already exists - not unpacking.')
+                continue
+            print(f'Unpacking {f} from {zippath} to {dest}\{f}')
             z.extract(f,dest)
 
 def delete(files: List[str]) -> None:

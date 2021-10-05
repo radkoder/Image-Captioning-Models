@@ -71,7 +71,7 @@ def save_descmap(descmap: DescMap, filepath:str) -> None:
 
 @measure("Preprocessing captions")
 def preprocess(infile, descfile='words.json', seqfile='seqs.json',tokenfile='tokenizer.json'):
-    if not is_newer_than(infile,descfile):
+    if files.age(infile) < files.age(descfile):
         print(f'Updating description file ({descfile})...')
         lines = read_lines(infile)
         desc = make_descmap(lines,'\t')
@@ -80,7 +80,7 @@ def preprocess(infile, descfile='words.json', seqfile='seqs.json',tokenfile='tok
         desc = load_descmap(descfile)
         print(f'Descriptions are up to date ({descfile})...')
         
-    if not is_newer_than(descfile, seqfile):
+    if files.age(descfile) < files.age(seqfile):
         print(f'Updating sequences file ({seqfile})...')
         sqs,seqinfo = make_seqs(desc)
         save_seqs(sqs,seqfile,seqinfo)
