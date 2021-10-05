@@ -18,3 +18,4 @@ main.train()
 test_image = 'D:/download/rudzia.jpg'
 result = main.apply(test_image)
 print(result)
+main.test()

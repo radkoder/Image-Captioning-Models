@@ -1,6 +1,9 @@
 import getopt,sys, itertools
+
+from tensorflow.python.keras.backend import update
 from imcap.files import unpack
 from imcap import *
+import numpy as np
 class config():
     data_dir = 'data'
     feat_net = None
@@ -108,14 +111,33 @@ def train():
                featsize=models.output_size[config.feat_net])
 
 def apply(img_name :str)-> str:
-    from tensorflow.keras.preprocessing.text import tokenizer_from_json
     feats = images.preprocess_image(img_name,config.feat_net)
     desc = models.load_model(config.desc_dir)
-    token = tokenizer_from_json(files.read(config.token_config))
+    token = mlutils.load_tokenizer(config.token_config)
     return models.apply_desc_model(desc,feats,token,34)
-
-def eval():
+@stage.measure("Calculating BLEU for model")
+def test():
+    from nltk.translate.bleu_score import corpus_bleu
     model = models.load_model(config.desc_dir)
+    test_set = files.load_setfile(config.testset_file)
+    descmap = words.load_descmap(config.word_file,test_set)
+    featmap = images.load_featmap(config.feat_file,test_set)
+    tokenizer = mlutils.load_tokenizer(config.token_config)
+    references = []
+    hypotesis = []
+    bar = stage.ProgressBar("Calculating BLEU score", len(test_set))
+    for label,desclist in descmap.items():
+        bar.update(label)
+        model.reset_states()
+        generated = models.apply_desc_model(model,np.array([featmap[label]]),tokenizer,34)
+        refs = [d.split() for d in desclist]
+        references.append(refs)
+        hypotesis.append(generated.split())
+    # calculate BLEU score
+    print('BLEU-1: %f' % corpus_bleu(references, hypotesis, weights=(1.0, 0, 0, 0)))
+    print('BLEU-2: %f' % corpus_bleu(references, hypotesis, weights=(0.5, 0.5, 0, 0)))
+    print('BLEU-3: %f' % corpus_bleu(references, hypotesis, weights=(0.3, 0.3, 0.3, 0)))
+    print('BLEU-4: %f' % corpus_bleu(references, hypotesis, weights=(0.25, 0.25, 0.25, 0.25)))
 
 
 def main(argv=sys.argv):

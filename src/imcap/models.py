@@ -2,6 +2,7 @@ import datetime
 from typing import Callable
 import numpy as np
 from numpy.lib import utils
+from tensorflow.keras import Model
 from imcap import stage, utils, words
 from tensorflow.keras.applications import vgg16, vgg19
 feat_extractors = ['VGG16', 'VGG19']
@@ -82,11 +83,11 @@ def save_model(model, dirname):
     import tensorflow as tf
     tf.keras.models.save_model(model,filepath=dirname)
 
-def load_model(dirname):
+def load_model(dirname) -> Model:
     import tensorflow as tf
     return tf.keras.models.load_model(dirname)
 
-def apply_desc_model(model, input, tokenizer, times: int) -> str:
+def apply_desc_model(model, input, tokenizer, times: int, log_endseq = False) -> str:
     from tensorflow.python.keras.preprocessing.sequence import pad_sequences
     from numpy import argmax
     text = words.STARTSEQ
@@ -97,6 +98,9 @@ def apply_desc_model(model, input, tokenizer, times: int) -> str:
         y = argmax(y)
         word = words.word_for_id(y,tokenizer)
         if word is None or word == words.ENDSEQ:
+            if log_endseq:
+                print(f"Sequence ended in {word}")
             break
         text += ' ' + word
-    return text
+
+    return text.removeprefix(words.STARTSEQ+' ')

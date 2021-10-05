@@ -42,7 +42,7 @@ def make_input_set_generator(word_seqs, image_feats, vocab_size,seq_size):
             yield ([np.array(Xs1), pad_sequences(Xs2, maxlen=seq_size)], to_categorical(Ys, num_classes=vocab_size))
 def load_set(setfile, seqfile, featfile, set_role : str= '',trim = None) -> Tuple[DataTuple, words.SeqInfo]:
     '''
-    trim - pass an int to trim the data set to given lenth
+    trim - pass an int to trim the data set to given length
     '''
     train_set = files.load_setfile(setfile)
     if trim != None:
@@ -54,3 +54,7 @@ def load_set(setfile, seqfile, featfile, set_role : str= '',trim = None) -> Tupl
     print(f'Max seq size is: {sentence_len} words')
     print(f'Vocabulary size: {vocab_size} words')
     return DataTuple(*make_input_set(word_seqs,image_set,vocab_size,sentence_len)), words.SeqInfo(sentence_len,vocab_size,None)
+
+def load_tokenizer(tokenizer_config_file: str):
+    from tensorflow.keras.preprocessing.text import tokenizer_from_json
+    return tokenizer_from_json(files.read(tokenizer_config_file))
