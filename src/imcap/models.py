@@ -103,4 +103,4 @@ def apply_desc_model(model, input, tokenizer, times: int, log_endseq = False) ->
             break
         text += ' ' + word
 
-    return text.removeprefix(words.STARTSEQ+' ')
+    return text[len(words.STARTSEQ)+1:]

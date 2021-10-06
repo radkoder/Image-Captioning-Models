@@ -13,9 +13,9 @@ main.config.trainset_file = f'{main.config.data_dir}/Flickr_8k.trainImages.txt'
 main.config.evalset_file = f'{main.config.data_dir}/Flickr_8k.devImages.txt'
 main.config.testset_file = f'{main.config.data_dir}/Flickr_8k.testImages.txt'
 main.make_config()
-main.make(f'data feats seqs')
-main.train()
+#main.make(f'data feats seqs')
+#main.train()
 test_image = 'D:/download/rudzia.jpg'
-result = main.apply(test_image)
-print(result)
+#result = main.apply(test_image)
+#print(result)
 main.test()

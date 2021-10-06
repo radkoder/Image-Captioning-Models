@@ -17,7 +17,7 @@ class config():
     testset_file = None
     evalset_file = None
     fex_dir=f'{model_dir}/{feat_net}_feat_extractor'
-    desc_dir=f'{model_dir}/{feat_net}_desc_net_test'
+    desc_dir=f'{model_dir}/{feat_net}_desc_net'
     seq_file = f'{artifact_dir}/seqs.json'
     word_file = f'{artifact_dir}/words.json'
     feat_file = f'{artifact_dir}/feats.json'
@@ -26,7 +26,7 @@ class config():
 def make_config():
     config.artifact_dir = f'artifacts/{config.dataset_name}-{config.feat_net}'
     config.fex_dir=f'{config.model_dir}/{config.feat_net}_feat_extractor'
-    config.desc_dir=f'{config.model_dir}/{config.feat_net}_desc_net'
+    config.desc_dir=f'{config.model_dir}/{config.feat_net}_desc_net_overfit_test'
     config.seq_file = f'{config.artifact_dir}/seqs.json'
     config.word_file = f'{config.artifact_dir}/words.json'
     config.feat_file = f'{config.artifact_dir}/feats.json'
@@ -86,11 +86,11 @@ def train_main(**kwargs):
     data,seqinfo = mlutils.load_set(setfile=kwargs.get('setfile'),
                             seqfile=kwargs.get('seqfile'),
                             featfile=kwargs.get('featfile'),
-                            set_role="train",trim=100)
-    valdata,_ = mlutils.load_set(setfile=kwargs.get('setfile'),
+                            set_role="train")
+    valdata,_ = mlutils.load_set(setfile=kwargs.get('valset'),
                         seqfile=kwargs.get('seqfile'),
                         featfile=kwargs.get('featfile'),
-                        set_role="train",trim=10)
+                        set_role="eval")
     model = models.make_model(seqinfo.max_desc_size,seqinfo.vocab_size,kwargs.get('featsize', 4096)) 
    
     utils.print_sizes(("validation data",valdata), 
@@ -100,7 +100,7 @@ def train_main(**kwargs):
     else:
         model.fit(x=[data.X_feat,data.X_seq],y=data.Ys,
         validation_data=([valdata.X_feat,valdata.X_seq],valdata.Ys),
-        epochs=1,callbacks=models.get_callbacks())
+        epochs=10,callbacks=models.get_callbacks())
         models.save_model(model, kwargs.get('output_name','desc_net'))
 
 def train():
@@ -108,7 +108,8 @@ def train():
                featfile=config.feat_file,
                seqfile=config.seq_file,
                output_name=config.desc_dir,
-               featsize=models.output_size[config.feat_net])
+               featsize=models.output_size[config.feat_net],
+               valset=config.evalset_file)
 
 def apply(img_name :str)-> str:
     feats = images.preprocess_image(img_name,config.feat_net)
