@@ -111,15 +111,16 @@ def train():
                featsize=models.output_size[config.feat_net],
                valset=config.evalset_file)
 
-def apply(img_name :str)-> str:
-    feats = images.preprocess_image(img_name,config.feat_net)
-    desc = models.load_model(config.desc_dir)
+def apply(img_name :str, modelpath = config.desc_dir, featnet = None)-> str:
+    if featnet == None: featnet = config.feat_net
+    feats = images.preprocess_image(img_name,featnet)
+    desc = models.load_model(modelpath)
     token = mlutils.load_tokenizer(config.token_config)
     return models.apply_desc_model(desc,feats,token,34)
 @stage.measure("Calculating BLEU for model")
-def test():
+def test(modelpath = config.desc_dir):
     from nltk.translate.bleu_score import corpus_bleu
-    model = models.load_model(config.desc_dir)
+    model = models.load_model(modelpath)
     test_set = files.load_setfile(config.testset_file)
     descmap = words.load_descmap(config.word_file,test_set)
     featmap = images.load_featmap(config.feat_file,test_set)

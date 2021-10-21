@@ -15,7 +15,8 @@ main.config.testset_file = f'{main.config.data_dir}/Flickr_8k.testImages.txt'
 main.make_config()
 #main.make(f'data feats seqs')
 #main.train()
+#main.test()
+
 test_image = 'D:/download/rudzia.jpg'
-#result = main.apply(test_image)
-#print(result)
-main.test()
+result = main.apply(test_image, 'models/VGG16_desc_net_overfit_test')
+print(result)
