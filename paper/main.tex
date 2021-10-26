@@ -171,11 +171,30 @@ Model przyjmuje na wejście $C$ słów które są przypisane wektorom liczbowym 
 Model ten działa podobnie do modelu CBOW lecz w odwrotną stronę - warstwa wejściowa zawiera jedno słowo (także zakodowane sposobem \quot{1 z n}), warstwa wyjściowa zaś zawiera $C$ rozkładów prawdopodobieństwa dla słów które mogą znaleźć się w kontekście słowa wejściowego. Wagi warstwy ukrytej także w tym przypadku reprezentują pewne kodowanie słów zachowujące ich kontekst.
 
 \section{Opis algorytmu generowania podpisów}
-\subsection{Zastosowane modele}
+
 \subsection{Opis algorytmu}
+Ogólny zarys algorytmu prezentuje się w ten sposób: Do modelu przekazywane są dwa obiekty danych: pierwszym z nich jest obraz, drugim przypisany do obrazu opis. Zadaniem modelu będzie wygenerowanie na podstawie tych danych kolejnego słowa które będzie częścią opisu obrazu. Kompletny opis będzie tworzony przez powtórne wywoływanie modelu i podawaniu na wejście opisu uzupełnianego o generowane słowa. 
+
+Żeby wygenerować podpis do obrazu który nie ma opisu - innymi słowy jego opis jest pusty - dodajemy do używanego słownika dwa tokeny nie reprezentujące słów w opisie lecz reprezentujące początek i koniec zdania. Dzięki temu model będzie mógł łatwo oznajmić użytkownikowi że opis powinien się zakończyć, generując token końca opisu i również będzie można tworzyć nowe opisy podając na wejście zdanie które zawiera jeden token - token początku.
+
+Model będzie zbudowany w architekturze Łączeniowej (ang. Merge) w której oba obiekty danych przetwarzane są początkowo oddzielnie i wyniki tych przetworzeń łączone są dopiero w ostatnich warstwach produkując wyjście modelu. Architektura ta została wybrana ze względu na zadowalające wyniki przy mniejszej ilości wag od innych architektur.\cite[p.~25]{rnn-in-captiongen}
+\TODO{obraz ilustrujący model}
+\TODO{obraz ilustrujący architektury}
 \subsubsection{Przetwarzanie obrazu}
-\subsubsection{Przetwarzanie słownika}
+Żeby zostać efektywnie przetworzonym przez model obraz musi zostać zredukowany do pewnego wektora cech w którym każdy element będzie miał więcej informacji niż pojedynczy piksel oryginału. Do tego przetworzenia można użyć zmodyfikowanych modeli detekcji obiektów. Z oryginalnej architektury odcinamy ostatnie warstwy których neurony kodują informacje o wykrytych klasach i ich pozycjach. Oczywiście każdy model jest inny lecz można założyć że w neuronach pewnej głębszej warstwy modelu zawarta jest ogólna informacja o obrazie - przed wyspecyfikowaniem klas obiektów.
+\TODO{diagram wskazujący wektor cech}
+
+Do tej roli można stosować modele już wytrenowane ponieważ trafność używanego wewnętrznie wektora cech nie zależy od przypisanego podpisu do obrazu, przy czym można ją ocenić poprzez trafność samego klasyfikatora - trafniejszy klasyfikator używa wewnętrznie lepszego wektora cech.
+\subsubsection{Przetwarzanie zdania}
+Na drugim wejściu podawany jest wektor słów występujących w opisie modelu. Słowa te muszą być uprzednio zakodowane - żeby to zrobić musimy dysponować pewnym słownikiem czyli zbiorem słów które model będzie mógł generować a także przyjmować w wejściu. Słownik taki najprościej jest skonstruować ze wszystkich słów występujących w zbiorze danych lecz praktycznym jest zawężenie go do najbardziej popularnych i przydatnych słów gdyż wielkość słownika bezpośrednio wpływa na ilość wag które trzeba wytrenować.
+
+Słowa następnie zostaną dalej skompresowane przez warstwę kodującą do postaci wektora który w założeniu jest elementem pewnej przestrzeni wektorowej zawierającej wszystkie słowa słownika. Wektor ten następnie podawany jest do warstwy Rekursywnej (RNN) której stan jest zachowywany przez wszyskie iteracje tworzące jeden opis i resetowany przed generacją następnego opisu.
 \subsubsection{Synteza wyniku}
+W wyniku osobnego przetworzenia obrazu i zdania mamy teraz odpowiednio wektor cech obrazu i wektor wyjściowy z warstwy RNN. Żeby otrzymać słowo wynikowe musimy te dwa wektory złączyć w jeden a następnie przetransformować ten wektor do wektora prawdopodobieństw poszczególnych słów. Za słowo wynikowe bierzemy to słowo które ma największe prawdopodobieństwo.
+
+Żeby złączyć oba wektory najpierw zrównujemy oba wektory wymiarami poprzez albo zredukowanie wymiaru wektora cech albo zwiększenie wymiaru wektora słowa a następnie dodajemy oba wektory. Otrzymany w ten sposób wektor przepuszczamy znowu przez warstwę zwiększającą wymiar a następnie przez warstwę z aktywacją typu softmax w celu uzyskania ostatecznego wektora prawdopodobieństw kolejnych słów. Ostateczne słowo jest wybierane na podstawie największego prawdopodobieństwa.
+\TODO{Diagram ostatnich warstw}
+
 \section{Implementacja modelu}
 \subsection{Użyte narzędzia}
 \begin{description}
@@ -192,6 +211,7 @@ Model ten działa podobnie do modelu CBOW lecz w odwrotną stronę - warstwa wej
 \subsection{Trening modelu}
 \subsection{Testy i ocena modelu}
 \section{Podsumowanie}
+\subsection{Przykłady}
 
 \newpage
 \TODO{Generowanie bibliografi za pomocą bibtex i formatowanie}
@@ -213,4 +233,5 @@ Model ten działa podobnie do modelu CBOW lecz w odwrotną stronę - warstwa wej
 	\bibitem {LSTM-intro} https://arxiv.org/pdf/1808.03314.pdf
 	\bibitem {word2vec} https://arxiv.org/pdf/1310.4546.pdf
 	\bibitem {word-embed}https://arxiv.org/pdf/1411.2738.pdf
+	\bibitem {rnn-in-captiongen}https://arxiv.org/pdf/1703.09137.pdf
 \end{document}
