@@ -42,6 +42,7 @@
 
 \addcontentsline{toc}{section}{Wstęp}
 \section*{Wstęp}
+\TODO{Czas przeszły}
 Celem tej pracy dyplomowej jest stworzenie systemu opartego o uczenie maszynowe, który będzie generował zrozumiałe dla człowieka podpisy dla obrazów. Zrealizowanie tego celu wymaga rozwiązania pewnych problemów pośrednich:
 \begin{itemize}
 	\item Wybór odpowiednich modeli przetwarzających obrazy, modele te powinny być w stanie operować z rozsądną wydajnością na komputerach klasy użytkowej. Oprócz tego należy także zaimplementować model generujący zdania.
@@ -109,6 +110,7 @@ Obszarowe sieci neuronowe dzielą swoje działanie na 2 etapy: Propozycji obszar
 Ten model jak nazwa wskazuje jest bardzo podobny do oryginalnego R-CNN lecz stosuje on pewne optymalizacje. Pierwszą z nich jest danie obrazu wejściowego do przetworzenia zewnętrznemu modelowi CNN i użycie warstwy wyjściowej tego modelu do proponowania obszarów potencjalnego wystąpienia obiektu. Drugą optymalizacją jest zastosowanie modelu uczenia maszynowego do proponowania obszarów zamiast algorytmu szukania selektywnego.\cite{ORdum-1} Trzecią z ważniejszych optymalizacji jest wprowadzenie wspólnych warstw dla modelu wykrywania obszarów oraz dla modelu klasyfikacji, modele te trenuje się wtedy przemiennie. \cite{ORdum-3}
 
 \subsubsection{Modele \quot{szybkie}}
+\TOD{ wyjaśnić modele szybkie}
 \paragraph{YOLO}
 Sieć ta pomija etap rozpoznawania obszarów stosowany w sieciach typu R-CNN, zamiast tego obraz jest dzielony na równe bloki o stałej szerokości którym jest przyporządkowywana określona liczba prostokątów okalających $B$. Dla każdego bloku obliczane jest prawdopodobieństwo zawierania obiektu w jednym z przyporządkowanych prostokątów i jeżeli prawdopodobieństwo jest odpowiednio duże określana jest przewidywana klasa obiektu. Warstwa wyjściowa dla każdego bloku składa się  z $B$ piątek określających prostokąt okalający oraz prawdopodobieństwo wystąpienia obiektu oraz liście prawdopodobieństw wszystkich klas.\cite{ORdum-4} Dzięki znaczniemu uproszczeniu metody generowania prostokątów okalających model YOLO oferuje znaczny spadek czasu detekcji przy jednoczesnym nieznacznym spadku celności. \cite{YOLOnet} 
 \subsection{Generacja zdań}
@@ -137,6 +139,7 @@ Na rysunku \ref{canon-RNN.png} przedstawiono najprostszy neuron rekursywny gdzie
 gdzie $W$ jest rozumiane jako tensor wag.
 \rysunek{canon-RNN.png}{1}{Schemat najprostszego neuronu rekursywnego}{https://arxiv.org/pdf/1808.03314.pdf}
 \paragraph{Neurony pamięci długo-krótkotrwałej (LSTM)}
+\TODO{Rozwinąć skrót}
 Mimo że dzięki swojej rekursywności neurony RNN mogą generować ciągi przedstawiają one jednak spore problemy podczas ich trenowania zwyczajowymi metodami propagacji wstecznej. Jeżeli generowane ciągi sa zbyt długie mogą wystąpić dwa zjawiska: eksplozja gradientu lub zanik gradientu. W przypadku pierwszego przypadku wagi mogą wachać się między tymi samymi wartościami i nie dążyć do żadnej wartości lub może nastąpić przepełnienie w jednostce obliczeniowej. W drugim przypadku wartości gradientu są tak małe że wytrenowanie sieci zajęło by nieopłacalną ilość czasu lub w ogóle nie było by możliwe z powodu ograniczonej precyzji kodowania liczb rzeczywistych w jednostce obliczeniowej. Efekty te spowodowane sa tym że przez rekursywność neuronu gradient jest zależny wykładniczo od obecnych wag oraz od zastosowanej funkcji aktywacji $G$ która jest zawsze mniejsza niż 1.\cite[p.~18]{LSTM-intro}
 
 Jako rozwiązanie tych problemów został zaproponowany neuron LSTM. Podczas projektowania LSTM zauważono że wykładnicza zależność gradientu od wag wynika z faktu iż wyjście neuronu $r$ zależy bezpośrednio od obecnego stanu neuronu $S$, wprowadzono więc dodatkowe parametry których zadaniem jest kontrolować wkład każdego z elementów do stanu oraz wyjścia neuronu.\cite[p.~22,23]{LSTM-intro} Elementy te zdefiniowane są następująco:
@@ -165,6 +168,7 @@ Dzięki zastosowaniu w neuronie współczynników  regulujących $g^s_i ,g^r_i, 
 \subsubsection{Kodowanie słów (Word Embedding)}
 Żeby móc przetwarzać słowa w sieciach neuronowych trzeba je uprzednio odpowiednio przekształcić do formy wektora liczb który łatwo poddaje się metodom uczenia maszynowego. Są dwie metody zrealizowania tego zadania: Model Skip-gram oraz model CBOW.
 \paragraph{CBOW}
+\TODO{Rozwinąć skrót}
 Model przyjmuje na wejście $C$ słów które są przypisane wektorom liczbowym za pomocą kodowania \quot{1 z n}. Zbiór słów dobieranych na wejście jest związany z kolejnością wysntępowania w tekscie co tworzy swoisty kontekst występowania słowa. Na wyjściu zaś znajduje się jeden wektor o długości równej wielkości zbioru słów, a wartości tego wektora stanowią prawdopodobieństwo występowania słów w tym kontekście. Pomiędzy warstwami wejścia i wyjścia znajduje sie jedna warstwa ukryta o długości wynikowego kodowania słów. Metoda ta opiera się na transporcie danych z o wiele większej warstwy wejściowej przez małą warstwę ukrytą do warstwy wyjściowej. Jeżeli model zostanie dobrze wytrenowany (prawdopodobieństwa słów a warstwie wyjściowej będą odpowiadały rzeczywistym prawdopodobieństwom w warstwie wejściowej) wtedy oznacza to że model \quot{znalazł} sposób na zakodowanie informacji o słowie oraz jego kontekście do o wiele mniejszego wektora. Z tak wygenerowanego enkodera możemy dalej korzystać w sieciach neuronowych. \cite[p.~1,3]{word-embed}
 \rysunek{CBOW.png}{1}{Schemat modelu CBOW}{https://arxiv.org/pdf/1808.03314.pdf}
 \paragraph{Skip-gram}
@@ -178,8 +182,7 @@ Ogólny zarys algorytmu prezentuje się w ten sposób: Do modelu przekazywane s�
 Żeby wygenerować podpis do obrazu który nie ma opisu - innymi słowy jego opis jest pusty - dodajemy do używanego słownika dwa tokeny nie reprezentujące słów w opisie lecz reprezentujące początek i koniec zdania. Dzięki temu model będzie mógł łatwo oznajmić użytkownikowi że opis powinien się zakończyć, generując token końca opisu i również będzie można tworzyć nowe opisy podając na wejście zdanie które zawiera jeden token - token początku.
 
 Model będzie zbudowany w architekturze Łączeniowej (ang. Merge) w której oba obiekty danych przetwarzane są początkowo oddzielnie i wyniki tych przetworzeń łączone są dopiero w ostatnich warstwach produkując wyjście modelu. Architektura ta została wybrana ze względu na zadowalające wyniki przy mniejszej ilości wag od innych architektur.\cite[p.~25]{rnn-in-captiongen}
-\TODO{obraz ilustrujący model}
-\TODO{obraz ilustrujący architektury}
+\rysunek{model_diagram.png}{1}{Schemat modelu implementowanego}{Własne}
 \subsubsection{Przetwarzanie obrazu}
 Żeby zostać efektywnie przetworzonym przez model obraz musi zostać zredukowany do pewnego wektora cech w którym każdy element będzie miał więcej informacji niż pojedynczy piksel oryginału. Do tego przetworzenia można użyć zmodyfikowanych modeli detekcji obiektów. Z oryginalnej architektury odcinamy ostatnie warstwy których neurony kodują informacje o wykrytych klasach i ich pozycjach. Oczywiście każdy model jest inny lecz można założyć że w neuronach pewnej głębszej warstwy modelu zawarta jest ogólna informacja o obrazie - przed wyspecyfikowaniem klas obiektów.
 \TODO{diagram wskazujący wektor cech}
@@ -189,19 +192,18 @@ Do tej roli można stosować modele już wytrenowane ponieważ trafność używa
 Na drugim wejściu podawany jest wektor słów występujących w opisie modelu. Słowa te muszą być uprzednio zakodowane - żeby to zrobić musimy dysponować pewnym słownikiem czyli zbiorem słów które model będzie mógł generować a także przyjmować w wejściu. Słownik taki najprościej jest skonstruować ze wszystkich słów występujących w zbiorze danych lecz praktycznym jest zawężenie go do najbardziej popularnych i przydatnych słów gdyż wielkość słownika bezpośrednio wpływa na ilość wag które trzeba wytrenować.
 
 Słowa następnie zostaną dalej skompresowane przez warstwę kodującą do postaci wektora który w założeniu jest elementem pewnej przestrzeni wektorowej zawierającej wszystkie słowa słownika. Wektor ten następnie podawany jest do warstwy Rekursywnej (RNN) której stan jest zachowywany przez wszyskie iteracje tworzące jeden opis i resetowany przed generacją następnego opisu.
+\rysunek{merge-stage.png}{1}{Schemat etapu syntezy wyniku gdzie: $C$ - rozmiar wektora cech, $N$ - rozmiar wektora słowa, $D$ - rozmiar słownika}{Własne}
 \subsubsection{Synteza wyniku}
 W wyniku osobnego przetworzenia obrazu i zdania mamy teraz odpowiednio wektor cech obrazu i wektor wyjściowy z warstwy RNN. Żeby otrzymać słowo wynikowe musimy te dwa wektory złączyć w jeden a następnie przetransformować ten wektor do wektora prawdopodobieństw poszczególnych słów. Za słowo wynikowe bierzemy to słowo które ma największe prawdopodobieństwo.
 
 Żeby złączyć oba wektory najpierw zrównujemy oba wektory wymiarami poprzez albo zredukowanie wymiaru wektora cech albo zwiększenie wymiaru wektora słowa a następnie dodajemy oba wektory. Otrzymany w ten sposób wektor przepuszczamy znowu przez warstwę zwiększającą wymiar a następnie przez warstwę z aktywacją typu softmax w celu uzyskania ostatecznego wektora prawdopodobieństw kolejnych słów. Ostateczne słowo jest wybierane na podstawie największego prawdopodobieństwa.
-\TODO{Diagram ostatnich warstw}
 
+\TODO{Diagram działania}
 \section{Implementacja modelu}
 \subsection{Użyte narzędzia}
-\begin{description}
-\item[Python] Jest to dynamicznie typowany język skryptowy popularny w zastosowaniach sztucznej inteligencji. Charakteryzuje się on 
-\item[Tensorflow]
-\item[Keras]
-\end{descripton}
+\paragraph*{Python} Jest to dynamicznie typowany język wysokiego poziomu popularny w zastosowaniach sztucznej inteligencji. Jedną z jego charakterystyk jest łatwość interfejsowania z bibliotekami napisanymi w C oraz innych szybszych kompilowanych językach, dlatego też jest szeroki wybór bibliotek asystujących w tworzeniu algorytmów uczenia maszynowego gdyż główne zasady algorytmu można wyspecyfikować w warstwie wysokiej abstrakcji a krytyczne obliczenia są wykonywane w zoptymalizowanych bibliotekach.
+\paragraph*{Tensorflow} Jest to biblioteka stworzona przez Google która umożliwia tworzenie i wykonywanie skierowanych grafów obliczeń. Jej głównym zastosowaniem jest uczenie maszynowe jednak nie jest do tego ograniczona.
+\paragraph*{Keras} Jest to biblioteka zawierająca odpowiednie klasy abstrakcji do łatwego budowania i trenowania sieci neuronowych. Stanowi ona swojego rodzaju interfejs do bibliotek wykonujących grafy obliczeń. W tym przypadku wykorzystywana jest biblioteka Tensorflow ale Keras wspiera również biblioteki Theano i CNTK Microsoftu.
 \subsection{Moduł ładowania danych}
 \subsection{Moduł przetwarzania obrazu}
 \subsection{Moduł kodowania słów}
