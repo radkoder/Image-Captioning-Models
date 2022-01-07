@@ -12,3 +12,6 @@ https://papers.nips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pd
 https://arxiv.org/pdf/1502.03044.pdf	Show,Atttend and Tell - model z atencją
 https://arxiv.org/pdf/1412.2306.pdf		Dobry model bez atencji
 https://arxiv.org/pdf/1703.09137.pdf	
+https://aclanthology.org/P02-1040.pdf   BLEU Score
+https://aclanthology.org/Q14-1006.pdf Flickr30k
+https://www.ijcai.org/Proceedings/15/Papers/593.pdf Flickr8k

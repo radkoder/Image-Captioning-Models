@@ -235,26 +235,62 @@ W przypadku danych tekstowych jedynym wymaganiem odnośnie zbioru danych jest to
 Gdzie: \textbf{Token} - wektor kodujący słowo - unikalny w obrębie danego słownika,
 \textbf{Sekwencja} - uporządkowana lista tokenów.
 
-Proces przetwarzania tekstu składa się z następujących etapów:
+Proces przetwarzania tekstu składa się z następujących etapów (w kolejności):
 \begin{enumerate}
 	\item Wydzielenie z teksu pojedyńczych opisów.
 	\item Sanitacja tekstu - oczyszczenie opisów ze znaków interpunkcyjnych, zmiana liter na małe.
-	 
+	\item Wprowadzenie znaczników początku i końca zdania.
+	\item Przyporządkowanie opisów do obrazów.
+	\item Utworzenie obiektu Tokenizera opisującego przyporządkowanie (słowo -> token).
+	\item Przekształcenie opisów w sekwencje tokenów.
+	\item Przekształcenie sekwencji w pary sekwencja-token.
 \end{enumerate}
+Pary sekwencja-token są konstruowane w następujący sposób. Jeżeli założymy że mamy sekwencje tokenów określoną jako listę
+$[t_1,t_2,\cdots, t_n]$ to możemy z niej utworzyć $n-1$ par: $([t_1,\cdots,t_{k}],t_{k+1})$ gdzie $k \in <0;n-1>$.
+Pary tę będą stanowiły tekstową część danych na których trenowany bedzie model.
 
 \TODO{diagram rozkładu na sekwencje i tokeny}
+
+Przetworzenie danych obrazowych jest znacznie prostsze, a końcowym produktem jest wyłącznie:
+\begin{itemize}
+	\item Przyporządkowanie obrazu do jego wektora cech.
+\end{itemize}
+W teori przetworzenie obrazu nie jest jeszcze konieczne na tym etapie, wektor cech można obliczyć tuż przed podaniem go na wejście modelu. Jednak obliczenie wektora cech w tym momencie przyspieszy znacznie trening modelu gdyż dla tego samego obrazu (czyli wektora cech) model zostanie wywołany kilkanaście lub nawet kilkadziesiąt razy. Obliczanie za każdym razem wektora cech byłoby zbędne gdyż nie zmieniałby się on z kolejnymi wywołaniami modelu generującego, dlatego też obliczamy wszystkie wektory cech dla całego zbioru danych przed rozpoczęciem treningu.
+
+Wektor cech będzie bezpośrednio otrzymywany z sieci konwolucyjnej zastosowanej do przetworzenia. Żeby wprowadzić obraz na wejście takiej sieci należy go najpierw odpowiednio przekrztałcić, a więc większość kroków przekrztałcających dane obrazowe będzie uzależniona od wyboru modelu przetwarzającego. W tym przypadku opiszę kroki przetwarzania dla modelu \textbf{VGG-16}, ale wszystkie kroki są podobne dla różnych modeli a różnią się tylko parametrami takimi jak rozdzielczość czy sposób normalizacji.
+
+Proces przetwarzania tekstu składa się z następujących etapów (w kolejności):
+\begin{enumerate}
+	\item Przeskalowanie obrazu do rozdzielczości 224x224.
+	\item Zamiana kolejnością kanałów koloru {R,G,B} -> {B,G,R}
+	\item Normalizacja wartości kolorów względem zbioru danych z ImageNet (odjęcie średniej)
+	\item Ewaluacja wyniku sieci konwolucyjnej w celu otrzymania wektora cech
+\end{enumerate}
+
+Po krokach wstępnego pretworzenia danych zarówno obrazowych jak i tekstowych, możemy złączyć ze sobą oba zbiory przez unikalny identyfikator obrazu w zbiorze danych. Wynikowy zbiór będzie można bezpośrednio wykorzystać do treningu modelu.
+
 \subsection{Konstrukcja i trening modelu}
 \TODO{Krótka sekcja o tym jak model jest konstruowany i sposobie trenowania}
+Model jest konstruowany za pomocą biblioteki Keras
 \subsection{Ocena modelu}
 \TODO{Krótka sekcja o ocenie modelu (może być usunięte jeżeli za krótka}
+Model będzie oceniany używając metryki BLEU \cite{BLEU}, która jest wykorzystywana do oceny systemów tłumaczących. W tym przypadku można traktować
+obraz jako pewne wyrażenie w innym języku komunikacji, a podpisy w zbiorze danych jako tłumaczenia o których wiemy że są poprawne.
+
+BLEU jest liczbą w przedziale [0;1] która określa zgodność tłumaczenia proponowanego do tłumaczeń referencyjnych.
+Wynik ten jest obliczany na postawie podobieństw sekwencji słów między tłumaczeniem proponowanym a tłumaczeniami referencyjnymi w zakresie danego zbioru danych.
+
+
 \section{Trening i testy modelu}
 \subsection{Zbiory danych}
-\TODO{Opis Flickr8k, Flickr30k, i być może coco}
+\TODO{Opis Flickr8k, Flickr30k}
+
 \subsection{Trening modelu}
 \TODO{Grafy z treningu na różnych datasetach - obserwacje i spostrzeżenia}
 \subsection{Testy i ocena modelu}
 \TODO{Porównanie BLEU między datasetami i innymi modelami}
 \section{Podsumowanie}
+\subsection{Propozycje zmian}
 \subsection{Przykłady}
 \TODO{Parę przykładów podpisów na obrazkach}
 \newpage
@@ -277,5 +313,6 @@ Proces przetwarzania tekstu składa się z następujących etapów:
 \bibitem{Overfeat}Pierre Sermanet, et al. "OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks." (2014).
 \bibitem{AlexNet}Krizhevsky, Alex et al. "ImageNet Classification with Deep Convolutional Neural Networks." Advances in Neural Information Processing Systems. Curran Associates, Inc.,
 \bibitem{CNN-intro}Keiron O'Shea, et al. "An Introduction to Convolutional Neural Networks." (2015).
+\bibitem{BLEU} todo
 \end{thebibliography}
 \end{document}
