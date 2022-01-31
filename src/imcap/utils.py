@@ -18,7 +18,11 @@ def make_divs(arr:List[Any]) -> List[Tuple[List[Any],List[Any]]]:
 
 def max_len(arr: List[Any]) -> int:
     return max(len(d) for d in arr)
+    
 def unzip_xy_pairs(arr:List[Tuple[ IntList2D, IntList ]]) -> Tuple[IntList2D, IntList]:
+    '''
+        []
+    '''
     return flatten([s[0] for s in arr]), flatten([s[1] for s in arr])
 def peek(arr,n=3):
     for i in range(n):
@@ -68,3 +72,5 @@ def print_sizes(*args):
         print(f'Size of {label} = {float(size)/(1024.0*1024.0*1024.0):.2f} GB')
     print(f'Total size of in-memory data = {float(tsize)/(1024.0*1024.0*1024.0):.2f} GB')
 
+def has_method(obj, name):
+    return callable(getattr(obj, name, None))

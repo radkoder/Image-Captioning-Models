@@ -1,5 +1,6 @@
-import os,zipfile,shutil,time
+import os,zipfile,shutil,time,tarfile,sys
 from typing import *
+from imcap import utils
 
 def get_filename(path: str) -> str:
     return os.path.split(path)[1].split('.')[0]
@@ -14,7 +15,7 @@ def is_newer_than(reference, file) -> bool:
 def age(file:str) -> int:
     if not os.path.isfile(file):
         print(f'No file {file} found')
-        return 0
+        return sys.maxsize
     else:
         return time.time() - os.stat(file).st_mtime 
 
@@ -64,4 +65,17 @@ def move(src, dst):
 def file(name):
     os.makedirs(os.path.dirname(name), exist_ok=True)
     return open(name,"w")
+def zipped(name):
+    if name.endswith('tar.gz'):
+        return tarfile.open(name, "r:gz")
+    elif name.endswith('zip'):
+        return zipfile.ZipFile(name)
+
+def zipped_members(fileobj):
+    if utils.has_method(fileobj, 'namelist') :
+        return fileobj.namelist()
+    elif utils.has_method(fileobj, 'getnames') :
+        return fileobj.getnames()
+    else:
+        raise Exception('Unknown file object type')
 

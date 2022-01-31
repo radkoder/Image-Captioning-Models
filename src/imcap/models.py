@@ -3,12 +3,12 @@ from typing import Callable
 import numpy as np
 from numpy.lib import utils
 from tensorflow.keras import Model
-from imcap import stage, utils, words
+from imcap import stage, utils, words, files
 from tensorflow.keras.applications import vgg16, vgg19
 feat_extractors = ['VGG16', 'VGG19']
 expected_size = {
     'VGG16': (224,224),
-    'VGG19': (244,244)
+    'VGG19': (224,224)
 }
 preproc = {
     'VGG16': vgg16.preprocess_input,
@@ -43,27 +43,27 @@ def get_image_feature_extractor(name: str):
 @stage.measure("Constructing ANN model")
 def make_model(seq_len,vocab_size, feat_len, embed_vec_len=256):
     from tensorflow.keras.models import Model
-    from tensorflow.keras.layers import Input,Dense,LSTM,Embedding,Dropout,Add
+    from tensorflow.keras.layers import Input,Dense,LSTM,Embedding,Dropout,Add, LeakyReLU
 
     inputs1 = Input(shape=(feat_len,), name='fe_input')
     fe1 = Dropout(0.5)(inputs1)
-    fe2 = Dense(embed_vec_len, activation='relu')(fe1)
+    fe2 = Dense(embed_vec_len,activation='relu')(fe1)
 
     inputs2 = Input(shape=(seq_len,), name='seq_input')
-    se1 = Embedding(input_dim=vocab_size,
+    se1 = Embedding(input_dim=vocab_size+1,
                     output_dim=embed_vec_len,
                     input_length=seq_len,
                     mask_zero=True,
                     name='embed_input')(inputs2)
     se2 = Dropout(0.5)(se1)
-    se3 = LSTM(embed_vec_len, unroll=True)(se2)
+    se3 = LSTM(embed_vec_len)(se2)
 
     decoder1 = Add()([fe2, se3])
-    decoder2 = Dense(embed_vec_len, activation='relu')(decoder1)
+    decoder2 = Dense(embed_vec_len*2, activation='relu')(decoder1)
     outputs = Dense(vocab_size, activation='softmax')(decoder2)
 
     model = Model(inputs=[inputs1, inputs2], outputs=outputs)
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
     return model
 
 def get_callbacks(model_name='my_model',checkpt_dir='checkpoints'):
@@ -77,7 +77,9 @@ def get_callbacks(model_name='my_model',checkpt_dir='checkpoints'):
         monitor='val_loss',
         verbose=1
         )
-    return [tensorboard_callback, checkpoint_callback]
+    earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2, restore_best_weights=True, mode='min', verbose=1)
+
+    return [tensorboard_callback, earlystop_callback]
 
 def save_model(model, dirname):
     import tensorflow as tf
@@ -87,14 +89,27 @@ def load_model(dirname) -> Model:
     import tensorflow as tf
     return tf.keras.models.load_model(dirname)
 
-def apply_desc_model(model, input, tokenizer, times: int, log_endseq = False) -> str:
+def release_model(model, dirname):
+    import tensorflow as tf
+    files.write(dirname+'/config.json', model.to_json())
+    model.save_weights(dirname+'/weights.h5')
+
+def load_release(dirname) -> Model:
+    import tensorflow as tf
+    model = tf.keras.models.model_from_json(files.read(dirname+'/config.json'))
+    model.load_weights(dirname+'/weights.h5')
+    return model
+
+def apply_desc_model(model, input, tokenizer, log_endseq = False) -> str:
     from tensorflow.python.keras.preprocessing.sequence import pad_sequences
     from numpy import argmax
     text = words.STARTSEQ
-    for i in range(times):
+    seq_len = model.get_layer('seq_input').input_shape[0][1]
+
+    for i in range(seq_len):
         seq = tokenizer.texts_to_sequences([text])[0]
-        seq = pad_sequences([seq],maxlen=times)
-        y = model.predict([input,seq])
+        seq = pad_sequences([seq],maxlen=seq_len)
+        y = model.predict_on_batch([input,seq])
         y = argmax(y)
         word = words.word_for_id(y,tokenizer)
         if word is None or word == words.ENDSEQ:

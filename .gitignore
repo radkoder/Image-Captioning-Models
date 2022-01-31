@@ -2,6 +2,10 @@ data/*
 models/*
 logs/
 checkpoints/
+artifacts/
+examples/
+logs.txt
+*.pyc
 *.json
 *.aux
 *.bbl
@@ -11,4 +15,5 @@ checkpoints/
 *.pdf
 *.toc
 *.zip
+.DS_STORE
 __pycache__/

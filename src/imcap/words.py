@@ -66,7 +66,7 @@ def clean_wordlist(wordlist: List[str]) -> List[str]:
     return c
 
 def save_descmap(descmap: DescMap, filepath:str) -> None:
-    with open( filepath , "w" ) as write:
+    with files.file(filepath) as write:
         json.dump( descmap , write )
 
 @measure("Preprocessing captions")
