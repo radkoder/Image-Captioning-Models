@@ -166,12 +166,6 @@ def apply(img_name :str, modelpath = config.desc_dir, featnet = None)-> str:
 def apply_batch(img_name , modelpath = config.desc_dir, featnet = None):
     if featnet == None: featnet = config.feat_net
     feats = images.preprocess_images(img_name,featnet)
-    # valdata,seqinfo = mlutils.load_set(setfile=config.evalset_file,
-    #                     seqfile=config.seq_file,
-    #                     featfile=config.feat_file,
-    #                     set_role="eval", as_generator=True, trim=1)
-    
-    # desc = models.make_model(seqinfo.max_desc_size,seqinfo.vocab_size,4096)
     desc = models.load_release(modelpath+'_release')
     token = mlutils.load_tokenizer(config.token_config)
     strings = dict()

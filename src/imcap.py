@@ -1,9 +1,11 @@
+
 from imcap import main
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['AUTOGRAPH_VERBOSITY'] = '0'
 import tensorflow as tf
+tf.autograph.set_verbosity(1)
 #tf.config.run_functions_eagerly()
 
 
