@@ -15,5 +15,6 @@ logs.txt
 *.pdf
 *.toc
 *.zip
+*.tar.gz
 .DS_STORE
 __pycache__/
