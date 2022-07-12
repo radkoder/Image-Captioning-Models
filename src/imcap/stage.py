@@ -50,7 +50,7 @@ def measure(name):
     def decorator(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
-            print(name + "...")
+            print(name + "...", end=None)
             begin = time.time()
             ret = func(*args, **kwargs)
             end = time.time()

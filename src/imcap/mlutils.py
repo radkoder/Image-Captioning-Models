@@ -18,11 +18,11 @@ class TrainSequence(tensorflow.keras.utils.Sequence):
     def __init__(self,seqs,feats, vocab_size, seq_size, batch_size=128):
         self.Xs1, self.Xs2, self.Ys = [],[],[]
         self.vocab_size, self.seq_size, self.batch_size = vocab_size, seq_size,batch_size
-        for key, imfeat in feats.items():
-                xs, ys = utils.unzip_xy_pairs(seqs[key])
+        for key, seq in seqs.items():
+                xs, ys = utils.unzip_xy_pairs(seq)
                 # xs = pad_sequences(xs, maxlen=seq_size)
                 # ys = to_categorical(ys,num_classes=vocab_size)
-                self.Xs1 += [imfeat]*len(xs)
+                self.Xs1 += [feats[key]]*len(xs)
                 self.Xs2 += xs
                 self.Ys += ys
     def setBatchSize(self,size):

@@ -74,3 +74,7 @@ def print_sizes(*args):
 
 def has_method(obj, name):
     return callable(getattr(obj, name, None))
+
+class Counter(dict):
+    def __missing__(self, key):
+        return 0

@@ -9,7 +9,11 @@ DescMap = Dict[str, List[str]]
 SeqInfo = namedtuple('SeqInfo', ['max_desc_size', 'vocab_size', 'tokenizer'])
 ENDSEQ = 'endseq'
 STARTSEQ = 'startseq'
-def make_descmap(lines : List[str],separator : str) -> DescMap:
+def make_descmap(lines : List[str],separator : str, **kwargs) -> DescMap:
+    '''
+    min_occurence - if word has less than 5 occurences in text discard it and all sentences containing it
+    max_len - if sentence is longer then max_len words, discard it 
+    '''
     descs = dict()
     for line in lines:
         label, words = line.split(separator)
@@ -17,7 +21,7 @@ def make_descmap(lines : List[str],separator : str) -> DescMap:
         if len(words) < 2: continue
         label = label.split('.')[0]
         descs.setdefault(label,[]).append(STARTSEQ+' ' + ' '.join(clean_wordlist(words)) +' '+ENDSEQ)
-    return descs
+    return clean_descmap(descs,kwargs.get('min_occurence',5),kwargs.get('max_len',30))
 
 
 def make_vocab(descmap: DescMap) -> Set[str]:
@@ -70,11 +74,16 @@ def save_descmap(descmap: DescMap, filepath:str) -> None:
         json.dump( descmap , write )
 
 @measure("Preprocessing captions")
-def preprocess(infile, descfile='words.json', seqfile='seqs.json',tokenfile='tokenizer.json'):
+def preprocess(infile
+, descfile='words.json'
+, seqfile='seqs.json'
+, tokenfile='tokenizer.json'
+, min_occur=5
+, max_len=30):
     if files.age(infile) < files.age(descfile):
         print(f'Updating description file ({descfile})...')
         lines = read_lines(infile)
-        desc = make_descmap(lines,'\t')
+        desc = make_descmap(lines,'\t',min_occurence = min_occur, max_len=max_len)
         save_descmap(desc,descfile)
     else:
         desc = load_descmap(descfile)
@@ -106,3 +115,39 @@ def word_for_id(integer, tokenizer):
 def load_tokenizer(config_path: str):
     from tensorflow.keras.preprocessing.text import tokenizer_from_json
     return tokenizer_from_json(files.read(config_path))
+
+def print_histogram(descmap: DescMap):
+    histogram = utils.Counter()
+    sent_lens = utils.Counter()
+    for sentence in utils.flatten(descmap.values()):
+        sent_lens[len(sentence.split())] +=1
+        for word in sentence.split():
+            histogram[word] += 1
+    num_words = len(histogram)
+    print(f'Num Words: {num_words}')
+    histogram = {w:c for w,c in histogram.items()}
+    for p in range(0,10,1):
+        print(f'p={p}: {len([c for c in histogram.values() if c<p])}')
+    for l,n in sorted(sent_lens.items()):
+        print(f'len={l}: {n}')
+    print(sum([c for l,c in sent_lens.items() if l > 21])) 
+
+def clean_descmap(descmap: DescMap, min_occurence=0, max_len=21):
+    #21 discards 5% of sentences while decreasing max sentence len from 72 (for f30k)
+    histogram = utils.Counter()
+    for sentence in utils.flatten(descmap.values()):
+        for word in sentence.split():
+            histogram[word] += 1
+    banned = {w for w,c in histogram.items() if c < min_occurence}
+    print(f'Banning {len(banned)} words from vocabulary')
+    for label in descmap.keys():
+        descmap[label] = [sent for sent in descmap[label] if len(banned.intersection(sent.split())) == 0 and len(sent.split()) <= max_len]
+
+    descmap = {l:caps for l,caps in descmap.items() if len(caps) > 0}
+    return descmap
+
+    
+
+
+    
+

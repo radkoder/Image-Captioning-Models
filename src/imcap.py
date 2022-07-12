@@ -1,12 +1,8 @@
 
-from imcap import main
+from imcap import main,words
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-os.environ['AUTOGRAPH_VERBOSITY'] = '0'
 import tensorflow as tf
-tf.autograph.set_verbosity(1)
-#tf.config.run_functions_eagerly()
 
 
 main.config.feat_net = 'VGG16'
@@ -17,8 +13,8 @@ main.config.feat_net = 'VGG16'
 # main.config.dataset_name = 'Flickr30k'
 # main.config.desc_name = 'f30k_finalattempt' #f30k release
 
-main.config.dataset_name = 'Flickr30k'
-main.config.desc_name = 'f30k_featsizetest' 
+main.config.dataset_name = 'Flickr8k'
+main.config.desc_name = 'f8k_gru_cm1024' 
 
 
 if main.config.dataset_name == 'Flickr8k':   
@@ -57,9 +53,11 @@ def BLEU():
     main.test(main.config.desc_dir)
 
 
-#train_and_save()
-#main.release()
+#words.print_histogram(words.load_descmap(main.config.word_file))
+train_and_save()
+main.release()
 print_examples()
-#BLEU()
+BLEU()
+#main.summary()
 
 #main.make('data feats seqs')

@@ -1,6 +1,5 @@
 import getopt,sys, itertools
 from subprocess import call
-from tensorflow.python.keras.backend import update
 from imcap.files import unpack
 from imcap import *
 import numpy as np
@@ -136,8 +135,6 @@ def train_main(**kwargs):
     
     venq.stop()
     tenq.stop()
-    models.apply_desc_model(model,images.preprocess_image('rudzia.jpg',config.feat_net),mlutils.load_tokenizer(config.token_config))
-
 
 def train():
     train_main(setfile=config.trainset_file,
@@ -177,7 +174,9 @@ def apply_batch(img_name , modelpath = config.desc_dir, featnet = None):
 def test(modelpath = config.desc_dir):
     from nltk.translate.bleu_score import corpus_bleu
     model = models.load_release(modelpath+'_release')
+
     test_set = files.load_setfile(config.testset_file)
+   # test_set = set(itertools.islice(test_set, 2))
     descmap = words.load_descmap(config.word_file,test_set)
     featmap = images.load_featmap(config.feat_file,test_set)
     tokenizer = mlutils.load_tokenizer(config.token_config)
@@ -187,11 +186,21 @@ def test(modelpath = config.desc_dir):
     for label,desclist in descmap.items():
         bar.update(label)
         model.reset_states()
-        generated = models.apply_desc_model(model,np.array([featmap[label]]),tokenizer)
-        refs = [d.split() for d in desclist]
+        generated = models.apply_desc_model(model,np.array([featmap[label]]),tokenizer).strip()
+        if generated.strip() == '':
+            print("EMPTY GENERATED")
+            return
+        if len(desclist) == 0:
+            print("EMPTY REFS")
+            return
+        refs = [d.split()[1:-1] for d in desclist]
         references.append(refs)
         hypotesis.append(generated.split())
     # calculate BLEU score
+    #print('REFS:::')
+    #print(references)
+    #print("HYPOS:::")
+    #print(hypotesis)
     print('BLEU-1: %f' % corpus_bleu(references, hypotesis, weights=(1.0, 0, 0, 0)))
     print('BLEU-2: %f' % corpus_bleu(references, hypotesis, weights=(0.5, 0.5, 0, 0)))
     print('BLEU-3: %f' % corpus_bleu(references, hypotesis, weights=(0.3, 0.3, 0.3, 0)))
@@ -200,9 +209,13 @@ def test(modelpath = config.desc_dir):
 def release():
     m = models.load_model(config.desc_dir)
     models.release_model(m,config.desc_dir+'_release')
+
+def summary():
+    m = models.load_release(config.desc_dir+'_release')
+    m.summary()
     
 def main(argv=sys.argv):
     return      
 
-# if __name__ == '__main__':
-#     main()
+#if __name__ == '__main__':
+
