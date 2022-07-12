@@ -2,11 +2,11 @@ import datetime
 from typing import Callable
 import numpy as np
 from numpy.lib import utils
-from tensorflow.keras import Model
+
 import tensorflow as tf
 from imcap import stage, utils, words, files
 from tensorflow.keras.applications import vgg16, vgg19
-from tensorflow.keras.layers import Input,Dense,LSTM,Embedding,Dropout,Add, LeakyReLU,Multiply, Attention, GlobalAveragePooling1D, GRU
+
 
 feat_extractors = ['VGG16', 'VGG19']
 expected_size = {
@@ -41,70 +41,6 @@ def get_image_feature_extractor(name: str):
         return model
     else:
         return None
-
-
-@stage.measure("Constructing ANN model")
-def make_model(seq_len,vocab_size, feat_len, embed_vec_len=1024):
-
-    ATT = False
-    ADD = False
-    BIG_LSTM = False
-    ENABLE_GRU = True
-    if BIG_LSTM: return big_lstm(seq_len, vocab_size, feat_len, embed_vec_len)
-    inputs1 = Input(shape=(feat_len,), name='fe_input')
-    fe1 = Dropout(0.5)(inputs1)
-    fe2 = Dense(embed_vec_len, activation='relu')(fe1)
-
-    inputs2 = Input(shape=(seq_len,), name='seq_input')
-    se1 = Embedding(input_dim=vocab_size+1,
-                    output_dim=embed_vec_len,
-                    input_length=seq_len,
-                    mask_zero=True,
-                    name='embed_input')(inputs2)
-    se2 = Dropout(0.5)(se1)
-
-    if ENABLE_GRU:
-        se3 = GRU(embed_vec_len, return_sequences=ATT)(se2)
-    else:
-        se3 = LSTM(embed_vec_len, return_sequences=ATT)(se2)
-    
-    if ADD:
-        decoder1 = Add()([fe2, se3])
-    elif ATT:
-        att1 = Attention()([fe2,se3])
-        decoder1 = GlobalAveragePooling1D()(att1)
-    else:
-        att1 = Dense(embed_vec_len)(se3)
-        fe3 = Multiply()([att1,fe2])
-        decoder1 = Add()([fe3, se3])
-    
-    decoder2 = Dense(embed_vec_len*2, activation='relu')(decoder1)
-    outputs = Dense(vocab_size, activation='softmax')(decoder2)
-
-    model = Model(inputs=[inputs1, inputs2], outputs=outputs)
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
-    return model
-
-def big_lstm(seq_len,vocab_size, feat_len, embed_vec_len=512):
-    inputs1 = Input(shape=(feat_len,), name='fe_input')   
-    is1 = Dense(embed_vec_len)(inputs1)
-    is2 = Dense(embed_vec_len)(inputs1)
-
-    inputs2 = Input(shape=(seq_len,), name='seq_input')
-    se1 = Embedding(input_dim=vocab_size+1,
-                    output_dim=embed_vec_len,
-                    input_length=seq_len,
-                    mask_zero=True,
-                    name='embed_input')(inputs2)
-
-    se3 = LSTM(embed_vec_len, dropout =0.5)(se1, initial_state = [is1,is2])
-    outputs = Dense(vocab_size, activation='softmax')(se3)
-
-    model = Model(inputs=[inputs1, inputs2], outputs=outputs)
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
-    return model
-    
-
 
 
 def get_callbacks(model_name='my_model',checkpt_dir='checkpoints'):
