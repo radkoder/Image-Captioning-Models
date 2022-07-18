@@ -137,7 +137,7 @@ Na rysunku \ref{canon-RNN.png} przedstawiono najprostszy neuron rekursywny gdzie
 gdzie $W$ jest rozumiane jako tensor wag.
 \rysunek{canon-RNN.png}{1}{Schemat najprostszego neuronu rekursywnego}{\url{https://arxiv.org/pdf/1808.03314.pdf}}
 \paragraph{Neurony pamięci długo-krótkotrwałej (LSTM - Long Short-Term Memory)}
-Mimo że dzięki swojej rekursywności neurony RNN mogą generować ciągi przedstawiają one jednak spore problemy podczas ich trenowania zwyczajowymi metodami propagacji wstecznej. Jeżeli generowane ciągi sa zbyt długie mogą wystąpić dwa zjawiska: eksplozja gradientu lub zanik gradientu. W przypadku pierwszego przypadku wagi mogą wachać się między tymi samymi wartościami i nie dążyć do żadnej wartości lub może nastąpić przepełnienie w jednostce obliczeniowej. W drugim przypadku wartości gradientu są tak małe że wytrenowanie sieci zajęło by nieopłacalną ilość czasu lub w ogóle nie było by możliwe z powodu ograniczonej precyzji kodowania liczb rzeczywistych w jednostce obliczeniowej. Efekty te spowodowane sa tym że przez rekursywność neuronu gradient jest zależny wykładniczo od obecnych wag oraz od zastosowanej funkcji aktywacji $G$ która jest zawsze mniejsza niż 1.\cite[p.~18]{LSTM-intro}
+Mimo że dzięki swojej rekursywności neurony RNN mogą generować ciągi przedstawiają one jednak spore problemy podczas ich trenowania zwyczajowymi metodami propagacji wstecznej. Jeżeli generowane ciągi sa zbyt długie mogą wystąpić dwa zjawiska: eksplozja gradientu lub zanik gradientu. W przypadku pierwszego przypadku wagi mogą wahać się między tymi samymi wartościami i nie dążyć do żadnej wartości lub może nastąpić przepełnienie w jednostce obliczeniowej. W drugim przypadku wartości gradientu są tak małe że wytrenowanie sieci zajęło by nieopłacalną ilość czasu lub w ogóle nie było by możliwe z powodu ograniczonej precyzji kodowania liczb rzeczywistych w jednostce obliczeniowej. Efekty te spowodowane sa tym że przez rekursywność neuronu gradient jest zależny wykładniczo od obecnych wag oraz od zastosowanej funkcji aktywacji $G$ która jest zawsze mniejsza niż 1.\cite[p.~18]{LSTM-intro}
 
 Jako rozwiązanie tych problemów został zaproponowany neuron LSTM. Podczas projektowania LSTM zauważono że wykładnicza zależność gradientu od wag wynika z faktu iż wyjście neuronu $r$ zależy bezpośrednio od obecnego stanu neuronu $S$, wprowadzono więc dodatkowe parametry których zadaniem jest kontrolować wkład każdego z elementów do stanu oraz wyjścia neuronu.\cite[p.~22,23]{LSTM-intro} Elementy te zdefiniowane są następująco:
 \begin{equation*}
@@ -262,7 +262,7 @@ Wektor cech będzie bezpośrednio otrzymywany z sieci konwolucyjnej zastosowanej
 Proces przetwarzania tekstu składa się z następujących etapów (w kolejności):
 \begin{enumerate}
 	\item Przeskalowanie obrazu do rozdzielczości 224x224.
-	\item Zamiana kolejnością kanałów koloru {R,G,B} -> {B,G,R}
+	\item Zamiana kolejnością kanałów koloru \{R,G,B\} -> \{B,G,R\}
 	\item Normalizacja wartości kolorów względem zbioru danych z ImageNet (odjęcie średniej)
 	\item Ewaluacja wyniku sieci konwolucyjnej w celu otrzymania wektora cech
 \end{enumerate}
@@ -280,17 +280,35 @@ obraz jako pewne wyrażenie w innym języku komunikacji, a podpisy w zbiorze dan
 BLEU jest liczbą w przedziale [0;1] która określa zgodność tłumaczenia proponowanego do tłumaczeń referencyjnych.
 Wynik ten jest obliczany na postawie podobieństw sekwencji słów między tłumaczeniem proponowanym a tłumaczeniami referencyjnymi w zakresie danego zbioru danych.
 
-
 \section{Trening i testy modelu}
 \subsection{Zbiory danych}
 \TODO{Opis Flickr8k, Flickr30k}
 
 \subsection{Trening modelu}
+Model jest trenowany za pomocą algorytmu propagacji wstecznej \cite{BackProp} z użyciem algorytmu ADAM \cite{ADAM} (będącym modyfikacją algorytmu SGD - \textit{Stochastycze zejście w gradiencie}) do minimalizacji funkcji błędu.
+
+Funkcją błędu która jest minimalizowana jest funkcja kategoryzowanej entropii produktowej - \textit{Categorical Cross Entropy}. Funkcja oblicza stopień podobieństwa dla dwóch dyskretnych rozkładów prawdopodobieństwa w następujący sposób: 
+\begin{equation*}
+L = - \sum_{i=0}^N y_iln(\hat{y_i})
+\end{equation*}
+gdzie $L$ - wartość funkcji błędu,$N$ - liczba kategorii, $y_i$ - znane prawdopodobieństwo dla i-tej kategorii , $\hat{y_i}$ - otrzymane z modelu prawdopodobieństwo dla i-tej kategorii. W praktyce podczas treningu znane rozkłady mają wartość niezerową tylko dla jednej kategorii (słowa) więc suma redukuje się tylko do jednego składnika: $-ln(\hat{y_i})$.
+
 \TODO{Grafy z treningu na różnych datasetach - obserwacje i spostrzeżenia}
 \subsection{Testy i ocena modelu}
 \TODO{Porównanie BLEU między datasetami i innymi modelami}
 \section{Podsumowanie}
 \subsection{Propozycje zmian}
+\clearpage
+\tabela{bleu-wynik}{Porównanie wyników BLEU między modelami}{Własne}{l|cccc|cccc}{
+\hline
+BLEU-N (w p.p.) & \multicolumn{4}{c|}{Flickr 8K} & \multicolumn{4}{c}{Flickr 30K} \\ \hline
+Nazwa Modelu     & B-1    & B-2   & B-3   & B-4   & B-1    & B-2   & B-3   & B-4   \\ \hline
+Arxiv 1412.2306  & 57,9   & 38,3  & 24,5  & 16,0  & 57,3   & 36,9  & 24,0  & 15,7  \\
+Show and Tell& 63     & 41    & 27    & ---   & 66,3   & 42,3  & 27,7  & ---   \\
+Show, Attend and Tell & 67     & 45,7  & 31,4  & 21,3  & 66,9   & 43,9  & 29,6  & 19,9  \\
+Model własny        & \textbf{37,0}   & \textbf{19,3}  & \textbf{11,6}  &  \textbf{4,4}  & \textbf{43,0}   & \textbf{21,6}  & \textbf{13,5}  &  \textbf{5,6}  \\ \hline
+}
+
 \subsection{Przykłady}
 \TODO{Parę przykładów podpisów na obrazkach}
 \newpage
@@ -314,5 +332,6 @@ Wynik ten jest obliczany na postawie podobieństw sekwencji słów między tłum
 \bibitem{AlexNet}Krizhevsky, Alex et al. "ImageNet Classification with Deep Convolutional Neural Networks." Advances in Neural Information Processing Systems. Curran Associates, Inc.,
 \bibitem{CNN-intro}Keiron O'Shea, et al. "An Introduction to Convolutional Neural Networks." (2015).
 \bibitem{BLEU} todo
+\bibitem{ADAM} todo
 \end{thebibliography}
 \end{document}

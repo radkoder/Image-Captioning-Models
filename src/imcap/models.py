@@ -63,6 +63,7 @@ def make_model(seq_len,vocab_size, feat_len, embed_vec_len=256):
     outputs = Dense(vocab_size, activation='softmax')(decoder2)
 
     model = Model(inputs=[inputs1, inputs2], outputs=outputs)
+    #tweak epsilon value in Adam optimizer to higher value 0.1 or 1.0
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
