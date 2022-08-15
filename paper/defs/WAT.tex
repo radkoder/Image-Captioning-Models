@@ -1,0 +1,190 @@
+\documentclass[paper=a4, fontsize=13pt, twoside]{scrartcl} % A4 paper and 11pt font size
+\linespread{1.5}
+%\renewcommand{\familydefault}{\sfdefault}
+\usepackage{indentfirst}
+\usepackage[T1]{fontenc} 
+\usepackage{times}
+\usepackage[polish]{babel} 
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsfonts,amsthm} 
+%\usepackage{color}
+\usepackage[pdftex]{graphicx}
+%\usepackage{pdfpages}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage[draft,nosingleletter]{impnattypo}
+\usepackage{sectsty} % Allows customizing section commands
+\usepackage{setspace}
+\allsectionsfont{\normalfont \scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{longtable}
+
+\usepackage[left=30mm,right=25mm,top=25mm,bottom=25mm,bindingoffset=5mm]{geometry}
+
+\usepackage{caption}
+\usepackage{listings}
+
+\usepackage{lipsum}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead[RO, LE]{\thepage}
+\fancyhead[RE, LO]{}
+\fancyfoot{}
+\renewcommand\headrulewidth{0pt}
+\renewcommand\footrulewidth{0pt}
+
+\fancypagestyle{firststyle}{
+\fancyhead[RO, LE]{}
+\fancyhead[RE, LO]{}
+\renewcommand{\footrulewidth}{1pt}
+\cfoot{\textrm{\textbf{\data}}}
+}
+
+\fancypagestyle{taskstyle}{
+\fancyhead[RO, LE]{}
+\fancyhead[RE, LO]{}
+\renewcommand{\footrulewidth}{0pt}
+}
+
+\renewcommand\headrulewidth{0pt}
+\renewcommand\footrulewidth{0pt}
+
+\setlength\parindent{27pt}
+
+\newcommand{\TODO}[1]{
+	{\large \color{red}{\underline{\textbf{TODO: #1}}}} 
+}
+
+\newcommand{\inserttitlepage}{
+    \thispagestyle{firststyle}
+    \begin{center}
+    \textrm{\LARGE{\textbf{WOJSKOWA AKADEMIA TECHNICZNA}}\\
+    \normalsize\textbf{im. Jarosława Dąbrowskiego}
+    \rule[4mm]{\linewidth}{1pt}
+    \LARGE{\textbf{WYDZIAŁ CYBERNETYKI}}}
+    \end{center}
+    
+    \vspace{5mm}
+    
+    \begin{center}
+        \includegraphics[width=40mm]{./defs/WAT.png}
+    \end{center}
+
+	\vspace{5mm}
+
+    \begin{center}
+        \textbf{{\fontsize{36}{10} \selectfont \textrm{PRACA DYPLOMOWA}}}\\
+        \vspace{5mm}
+        \textbf{\textrm{\LARGE{\studia}}}
+    \end{center}
+    
+    \begin{longtable*}{p{.25\textwidth} p{.75\textwidth}}
+        \textrm{\Large{Temat pracy:}} & \textrm{\textbf{\Large{\temat}}} \\
+    \end{longtable*}
+    
+    \begin{singlespace}
+    \begin{center}
+        \textrm{\textbf{\Large{\kierunek}}}\\
+        \textrm{...............................................................................................................\\{{\scriptsize{(kierunek studiów)}}}}\\~\\
+        \textrm{\textbf{\Large{\specjalnosc}}}
+        \textrm{...............................................................................................................\\\scriptsize{(specjalność)}}\\
+    \end{center}
+    \end{singlespace}
+    % \vspace{30mm}
+    \begin{longtable*}{p{.5\textwidth} p{.5\textwidth}}
+    \textrm{Dyplomant:} & 	\textrm{Promotor pracy:}\\
+    \textrm{\textbf{\autor}}  & \textrm{\textbf{\promotor}} \\
+    \ifdefined\konsultant
+    ~ & ~\\ 
+    ~ & \textrm{Konsultant:} \\
+    ~ & \textrm{\textbf{\konsultant}}\\
+    \fi
+    \end{longtable*}
+    
+    \clearpage
+    
+    %\newpage
+  
+    %\large{\textbf{Oświadczenie}}\\
+    
+    %\normalsize{"Wyrażam zgodę na udostępnianie mojej pracy przez Archiwum  WAT"}
+    %~\\
+    
+    %\begin{longtable*}{p{.6\textwidth} c}
+    %Data ...................... & 	....................................\\
+    %~ & (podpis)\\
+   
+    %~ & ~\\ 
+   
+    %~ & Pracę przyjąłem \\
+    
+    %~ & ~\\
+    %~ & ~\\
+        
+    %~ & Promotor Pracy\\
+    %~ & \promotor \\
+    %\end{longtable*}
+	
+    \includegraphics[width=1.0\textwidth ,height=1.0\textheight , keepaspectratio]{./files/os-pod.pdf}
+
+    \includegraphics[width=1.0\textwidth ,height=1.0\textheight , keepaspectratio]{./files/zad1.pdf}
+  
+    \includegraphics[width=1.0\textwidth ,height=1.0\textheight , keepaspectratio]{./files/zad2.pdf}
+   
+    %\includegraphics[width=\pagewidth ,height=\pageheight, keepaspectratio]{./files/zad2.pdf}
+     
+    %\large{Zadania do pracy dyplomowej:}
+    
+    %\normalsize{\zadania}
+    
+    %\newpage
+    
+    %\textit{\normalsize{Ta strona zostanie zamieniona na oryginał zadań do pracy dyplomowej}}
+    
+    \newpage
+   
+
+    \renewcommand\refname{Bibliografia}
+}
+
+\newcommand{\rysunek}[4]{
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=#2\textwidth]{./files/#1}
+            \caption{#3 \\ \textit{Źródło: #4}}
+            \label{#1}
+        \end{center}
+    \end{figure}   
+}
+
+\newcommand{\podrysunek}[3]{
+    \begin{subfigure}[t]{.4\textwidth}
+    	\centering
+        \includegraphics[width=\linewidth]{./files/#1}
+    \end{subfigure}   
+}
+\newcommand{\wykres}[4]{
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=#2\textwidth]{./files/#1}
+            \caption{#3. \textit{Źródło: #4}}
+            \label{#1}
+        \end{center}
+    \end{figure}   
+}
+
+\captionsetup[table]{name=Tabela}
+\newcommand{\tabela}[5]{                            
+        \begin{longtable}{#4}
+        \caption{#2.}\\
+            #5
+        \end{longtable}
+}
+
+\captionsetup[lstlisting]{margin=0pt}
+
+\renewcommand{\lstlistingname}{Kod}
+\newcommand{\kod}[3]{                            
+       \lstinputlisting[caption=#2. \textit{Źródło: #3}\label{#1}, basicstyle=\ttfamily]{./files/#1}
+}

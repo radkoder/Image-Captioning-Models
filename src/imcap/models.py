@@ -43,6 +43,33 @@ def get_image_feature_extractor(name: str):
         return None
 
 
+@stage.measure("Constructing ANN model")
+def make_model(seq_len,vocab_size, feat_len, embed_vec_len=256):
+    from tensorflow.keras.models import Model
+    from tensorflow.keras.layers import Input,Dense,LSTM,Embedding,Dropout,Add
+
+    inputs1 = Input(shape=(feat_len,), name='fe_input')
+    fe1 = Dropout(0.5)(inputs1)
+    fe2 = Dense(embed_vec_len, activation='relu')(fe1)
+
+    inputs2 = Input(shape=(seq_len,), name='seq_input')
+    se1 = Embedding(input_dim=vocab_size,
+                    output_dim=embed_vec_len,
+                    input_length=seq_len,
+                    mask_zero=True,
+                    name='embed_input')(inputs2)
+    se2 = Dropout(0.5)(se1)
+    se3 = LSTM(embed_vec_len, unroll=True)(se2)
+
+    decoder1 = Add()([fe2, se3])
+    decoder2 = Dense(embed_vec_len, activation='relu')(decoder1)
+    outputs = Dense(vocab_size, activation='softmax')(decoder2)
+
+    model = Model(inputs=[inputs1, inputs2], outputs=outputs)
+    #tweak epsilon value in Adam optimizer to higher value 0.1 or 1.0
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+
 def get_callbacks(model_name='my_model',checkpt_dir='checkpoints'):
     import tensorflow as tf
     log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")

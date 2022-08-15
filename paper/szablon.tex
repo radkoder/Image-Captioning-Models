@@ -1,0 +1,50 @@
+\input{./defs/WAT.tex}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{blindtext}
+\newcommand{\kk}[1]{\todo[color=cyan!40,inline]{KK: #1}}
+
+\newcommand{\Leg}[3][]{\mleft(\frac{#2\mathstrut}{#3}\mright)_{\mkern-6mu#1}} 
+\newcommand{\studia}{STACJONARNE STUDIA $I^\circ$}
+\newcommand{\temat}{Projekt i implementacja systemu do generowania podpisów na podstawie zdjęć}
+\newcommand{\odstep}{40mm}
+\newcommand{\autor}{Radosław KOPIŃSKI}
+\newcommand{\promotor}{dr inż. Karol ANTCZAK}
+\newcommand{\data}{Warszawa 2021}
+\newcommand{\kierunek}{Informatyka}
+\newcommand{\specjalnosc}{Modelowanie i symulacja}
+\newcommand{\zadania}{
+
+\begin{enumerate}
+    \item Przegląd metod uczenia głębokiego w kontekście przetwarzania obrazów
+    \item Przygotowanie opisu algorytmu generowania podpisów na podstawie zdjęć
+    \item Implementacja algorytmu
+    \item Trening i testy modelu na zebranym zbiorze danych
+\end{enumerate}
+}
+
+\newcommand{\quot}[1]{``#1''}
+\newtheorem{theorem}{Twierdzenie}
+
+\newtheorem{definition}{Definicja}
+\newtheorem{cor}{Wniosek}
+\newtheorem{ex}{Przykład}
+\urlstyle{same}
+\begin{document}
+
+\inserttitlepage
+
+\tableofcontents
+
+\newpage
+
+\addcontentsline{toc}{section}{Wstęp}
+\section*{Wstęp}
+
+\begin{thebibliography}{}
+
+\end{thebibliography}
+\end{document}
