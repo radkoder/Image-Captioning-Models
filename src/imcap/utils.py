@@ -19,7 +19,11 @@ def make_divs(arr:List[Any]) -> List[Tuple[List[Any],List[Any]]]:
 
 def max_len(arr: List[Any]) -> int:
     return max(len(d) for d in arr)
+    
 def unzip_xy_pairs(arr:List[Tuple[ IntList2D, IntList ]]) -> Tuple[IntList2D, IntList]:
+    '''
+        []
+    '''
     return flatten([s[0] for s in arr]), flatten([s[1] for s in arr])
 def peek(arr,n=3):
     for i in range(n):
@@ -72,3 +76,9 @@ def print_sizes(*args):
 def now_str():
     return datetime.now().strftime("%Y-%m-%d-%H%M%S")
 
+def has_method(obj, name):
+    return callable(getattr(obj, name, None))
+
+class Counter(dict):
+    def __missing__(self, key):
+        return 0

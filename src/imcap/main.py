@@ -1,16 +1,16 @@
 import getopt,sys, itertools
-
-from tensorflow.python.keras.backend import update
+from subprocess import call
 from imcap.files import unpack
 from imcap import *
 import numpy as np
+
 class config():
     data_dir = 'data'
     feat_net = None
     dataset_name = None
     test_image = None
     artifact_dir = f'artifacts/{dataset_name}-{feat_net}'
-    model_dir = f'models/'
+    model_dir = f'models'
     images_zip = None
     descriptions_file = None
     trainset_file = None
@@ -22,11 +22,16 @@ class config():
     word_file = f'{artifact_dir}/words.json'
     feat_file = f'{artifact_dir}/feats.json'
     token_config = f'{artifact_dir}/tokenizer.json'
+    train_epochs = 10
+    desc_name = None
 
 def make_config():
+    if config.desc_name == None:
+        print("No desc name in config")
+        exit(-1)
     config.artifact_dir = f'artifacts/{config.dataset_name}-{config.feat_net}'
     config.fex_dir=f'{config.model_dir}/{config.feat_net}_feat_extractor'
-    config.desc_dir=f'{config.model_dir}/{config.feat_net}_desc_net_overfit_test'
+    config.desc_dir=f'{config.model_dir}/{config.feat_net}_desc_net_{config.desc_name}'
     config.seq_file = f'{config.artifact_dir}/seqs.json'
     config.word_file = f'{config.artifact_dir}/words.json'
     config.feat_file = f'{config.artifact_dir}/feats.json'
@@ -53,6 +58,8 @@ def make_main(arg : str):
         dataset_name = config.dataset_name
         if dataset_name == 'Flickr8k':
             unpack(f'data/{dataset_name}_text.zip',['Flickr_8k.testImages.txt','Flickr8k.token.txt', 'Flickr_8k.trainImages.txt', 'Flickr_8k.devImages.txt'])
+        elif dataset_name == 'Flickr30k':
+            retcode = call("python " + f"{config.data_dir}/f30k/make_sets.py", shell=True)
         else:
             print(f"Unknown dataset {dataset_name}")
     else:
@@ -83,25 +90,51 @@ def train_main(**kwargs):
     #     print("Aborting.")
     #     exit(0)
 
+    # data,seqinfo = mlutils.load_set(setfile=kwargs.get('setfile'),
+    #                         seqfile=kwargs.get('seqfile'),
+    #                         featfile=kwargs.get('featfile'),
+    #                         set_role="train")
     data,seqinfo = mlutils.load_set(setfile=kwargs.get('setfile'),
                             seqfile=kwargs.get('seqfile'),
                             featfile=kwargs.get('featfile'),
-                            set_role="train")
+                            set_role="train",as_generator=True)
     valdata,_ = mlutils.load_set(setfile=kwargs.get('valset'),
                         seqfile=kwargs.get('seqfile'),
                         featfile=kwargs.get('featfile'),
-                        set_role="eval")
+                        set_role="eval", as_generator=True)
     model = models.make_model(seqinfo.max_desc_size,seqinfo.vocab_size,kwargs.get('featsize', 4096)) 
    
-    utils.print_sizes(("validation data",valdata), 
-                      ("training data",data))
+    #utils.print_sizes(("validation data",valdata), 
+    #                 ("training data",data))
+
+    tenq = tf.keras.utils.OrderedEnqueuer(data)
+    tenq.start(max_queue_size=1000)
+    train_gen = tenq.get()
+
+    venq = tf.keras.utils.OrderedEnqueuer(valdata)
+    venq.start(max_queue_size=1000)
+    val_gen = venq.get()
+
     if kwargs.get('dry_run',False):
         print("Model fitting would happen here...")
     else:
-        model.fit(x=[data.X_feat,data.X_seq],y=data.Ys,
-        validation_data=([valdata.X_feat,valdata.X_seq],valdata.Ys),
-        epochs=10,callbacks=models.get_callbacks())
-        models.save_model(model, kwargs.get('output_name','desc_net'))
+        # model.fit(x=[data.X_feat,data.X_seq],y=data.Ys,
+        # validation_data=([valdata.X_feat,valdata.X_seq],valdata.Ys),
+        # epochs=kwargs.get('epochs',3),callbacks=models.get_callbacks())
+        # models.save_model(model, kwargs.get('output_name','desc_net'))
+        model.fit(x=train_gen,
+        validation_data=val_gen,
+        epochs=kwargs.get('epochs',1),
+        steps_per_epoch=len(data), #see mlutils make_input_set_generator
+        validation_steps=len(valdata),
+        use_multiprocessing=False,
+        workers=1,
+        max_queue_size=10,
+        callbacks=models.get_callbacks())
+        models.save_model(model, kwargs.get('output_name','unnamed_desc_net'))
+    
+    venq.stop()
+    tenq.stop()
 
 def train():
     train_main(setfile=config.trainset_file,
@@ -109,19 +142,41 @@ def train():
                seqfile=config.seq_file,
                output_name=config.desc_dir,
                featsize=models.output_size[config.feat_net],
-               valset=config.evalset_file)
+               valset=config.evalset_file,
+               epochs= config.train_epochs)
 
 def apply(img_name :str, modelpath = config.desc_dir, featnet = None)-> str:
     if featnet == None: featnet = config.feat_net
     feats = images.preprocess_image(img_name,featnet)
-    desc = models.load_model(modelpath)
+    # valdata,seqinfo = mlutils.load_set(setfile=config.evalset_file,
+    #                     seqfile=config.seq_file,
+    #                     featfile=config.feat_file,
+    #                     set_role="eval", as_generator=True, trim=1)
+    
+    # desc = models.make_model(seqinfo.max_desc_size,seqinfo.vocab_size,4096)
+    desc = models.load_release(modelpath+'_release')
     token = mlutils.load_tokenizer(config.token_config)
-    return models.apply_desc_model(desc,feats,token,34)
+    #desc.reset_states()
+    return models.apply_desc_model(desc,feats,token)
+
+@stage.measure("Captioning images")
+def apply_batch(img_name , modelpath = config.desc_dir, featnet = None):
+    if featnet == None: featnet = config.feat_net
+    feats = images.preprocess_images(img_name,featnet)
+    desc = models.load_release(modelpath+'_release')
+    token = mlutils.load_tokenizer(config.token_config)
+    strings = dict()
+    for f,n in zip(feats,img_name):
+        strings[n]= models.apply_desc_model(desc,f,token)
+    return strings
+
 @stage.measure("Calculating BLEU for model")
 def test(modelpath = config.desc_dir):
     from nltk.translate.bleu_score import corpus_bleu
-    model = models.load_model(modelpath)
+    model = models.load_release(modelpath+'_release')
+
     test_set = files.load_setfile(config.testset_file)
+   # test_set = set(itertools.islice(test_set, 2))
     descmap = words.load_descmap(config.word_file,test_set)
     featmap = images.load_featmap(config.feat_file,test_set)
     tokenizer = mlutils.load_tokenizer(config.token_config)
@@ -131,55 +186,36 @@ def test(modelpath = config.desc_dir):
     for label,desclist in descmap.items():
         bar.update(label)
         model.reset_states()
-        generated = models.apply_desc_model(model,np.array([featmap[label]]),tokenizer,34)
-        refs = [d.split() for d in desclist]
+        generated = models.apply_desc_model(model,np.array([featmap[label]]),tokenizer).strip()
+        if generated.strip() == '':
+            print("EMPTY GENERATED")
+            return
+        if len(desclist) == 0:
+            print("EMPTY REFS")
+            return
+        refs = [d.split()[1:-1] for d in desclist]
         references.append(refs)
         hypotesis.append(generated.split())
     # calculate BLEU score
+    #print('REFS:::')
+    #print(references)
+    #print("HYPOS:::")
+    #print(hypotesis)
     print('BLEU-1: %f' % corpus_bleu(references, hypotesis, weights=(1.0, 0, 0, 0)))
     print('BLEU-2: %f' % corpus_bleu(references, hypotesis, weights=(0.5, 0.5, 0, 0)))
     print('BLEU-3: %f' % corpus_bleu(references, hypotesis, weights=(0.3, 0.3, 0.3, 0)))
     print('BLEU-4: %f' % corpus_bleu(references, hypotesis, weights=(0.25, 0.25, 0.25, 0.25)))
 
+def release():
+    m = models.load_model(config.desc_dir)
+    models.release_model(m,config.desc_dir+'_release')
 
+def summary():
+    m = models.load_release(config.desc_dir+'_release')
+    m.summary()
+    
 def main(argv=sys.argv):
     return      
-    #Takes about an two hours
-    #images.preprocess('../data/Flickr8k_Dataset.zip')
-    # -> output in VGG16-feats.json
 
-    #Takes 5 s 
-    words.preprocess('../data/Flickr8k.token.txt',"words.json",'seqs.json')
-    # -> output in words.json
+#if __name__ == '__main__':
 
-    train_set = files.load_setfile('../data/Flickr_8k.trainImages.txt')
-    print(f'Loading dataset of {len(train_set)} examples')
-
-    word_seqs,seq_size,vocab_size = words.load_seqs('seqs.json',subset=train_set)
-    image_set = images.load_featmap('VGG16-feats.json',subset=train_set)
-    print(f'Image train set length: {len(image_set)}')
-    print(f'Max seq size is: {seq_size} words')
-    print(f'Vocabulary size: {vocab_size} words')
-
-
-    model = models.make_model(seq_size,vocab_size,4096)
-
-    # filepath = 'model-ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.pb'
-    # checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-
-    # gen = models.make_input_set_generator(word_seqs,image_set,vocab_size,seq_size)
-    # model.fit(x=gen,y=None,steps_per_epoch=len(train_set),epochs=5,workers=4,callbacks=[checkpoint])
-
-    X1,X2,Y = models.make_input_set(word_seqs,image_set,vocab_size,seq_size)
-    model.fit(x=[X1,X2],y=Y,epochs=6,workers=4)
-    model.save('word_generation_model_final')
-    # Xs, Ys = next(gen)
-    # print(f'Generated {len(Ys)} samples')
-    # print(f'Sample dimentions: image features: {Xs[0].shape} \t word vectors: {Xs[1].shape} \t result vector: {Ys.shape}')
-
-    # imXs, wdXs, Ys = models.make_input_set(word_seqs,image_set,vocab_size,seq_size)
-    # print(f'Generated {len(Ys)} samples')
-    # print(f'Sample dimentions: image features: {imXs.shape} \t word vectors: {wdXs.shape} \t result vector: {Ys.shape}')
-
-# if __name__ == '__main__':
-#     main()
