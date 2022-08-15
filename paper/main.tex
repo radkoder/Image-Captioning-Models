@@ -8,14 +8,14 @@
 \newcommand{\kk}[1]{\todo[color=cyan!40,inline]{KK: #1}}
 
 \newcommand{\Leg}[3][]{\mleft(\frac{#2\mathstrut}{#3}\mright)_{\mkern-6mu#1}} 
-\newcommand{\studia}{STACJONARNE STUDIA $I^\circ$}
+\newcommand{\studia}{STACJONARNE STUDIA I$^\circ$}
 \newcommand{\temat}{Projekt i implementacja systemu do generowania podpisów na podstawie zdjęć}
 \newcommand{\odstep}{40mm}
 \newcommand{\autor}{Radosław KOPIŃSKI}
 \newcommand{\promotor}{dr inż. Karol ANTCZAK}
-\newcommand{\data}{Warszawa 2021}
-\newcommand{\kierunek}{Informatyka}
-\newcommand{\specjalnosc}{Modelowanie i symulacja}
+\newcommand{\data}{Warszawa 2022}
+\newcommand{\kierunek}{INFORMATYKA}
+\newcommand{\specjalnosc}{INŻYNIERIA SYSTEMÓW}
 \newcommand{\zadania}{
 
 \begin{enumerate}
@@ -32,6 +32,7 @@
 \newtheorem{definition}{Definicja}
 \newtheorem{cor}{Wniosek}
 \newtheorem{ex}{Przykład}
+\urlstyle{same}
 \begin{document}
 
 \inserttitlepage
@@ -50,8 +51,8 @@ Celem tej pracy dyplomowej jest stworzenie systemu opartego o uczenie maszynowe,
 \end{itemize}
 
 W pierwszym rozdziale zostały przedstawione istniejące modele służące identyfikacji obiektów na obrazach. Modele z tej rodziny zostaną wykorzystane w systemie do wyciągnięcia informacji z zadanego obrazu oraz do wygenerowania stosownych podpisów. \par
-W drugim rozdziale opisana zostanie zasada działania konstruowanego algorytmu. Wyszczególnione zostaną poszczególne komponenty oraz zostanie wyjaśniona ich rola w systemie. \par
-W rozdziale trzecim zostanie zaprezentowana implementacja algorytmu przedstawionego w rozdziale drugim. Zostaną omówione biblioteki i narzędzia implementacji a także kwestie specyficzne dla implementacji. \par
+W drugim rozdziale opisana została zasada działania konstruowanego algorytmu. Wyszczególnione zostaną poszczególne komponenty oraz zostanie wyjaśniona ich rola w systemie. \par
+W rozdziale trzecim została zaprezentowana implementacja algorytmu przedstawionego w rozdziale drugim. Zostaną omówione biblioteki i narzędzia implementacji a także kwestie specyficzne dla implementacji. \par
 W czwartym rozdziale omówione zostały metody trenowania oraz oceny modelu. Dokonane zostało porównanie zbudowanego modelu z istniejącymi rozwiązaniami używając powszechnych metryk porównywania tłumaczeń. \par
 W rozdziale piątym zostało zawarte podsumowanie wykonanych zadań, ocena ich realizacji oraz zostały wyciągnięte wnioski na temat osiągniętych wyników oraz sposobów ich otrzymania.
 
@@ -78,12 +79,12 @@ Są one podstawowym składnikiem sieci konwolucyjnych. Wartość sygnału wyjśc
 Gdzie: $o_i$ - wartość neuronu wyjściowego, $C$ - ilość kanałów wejścia, $A^c_i$ - $i$-ta podmacierz $c$-tego kanału, $K^c$ - jądro dla $c$-tego kanału, $e$ - wektor jednostkowy, $\odot$ - iloczyn Hadamarda (mnożenie elementów)\cite{CNN-intro}.
 Idee tej warstwy przedstawiono na rysunku \ref{conv-layer.png} \cite{CNN-intro}
 
-\rysunek{conv-layer.png}{1}{Zasada działania warstwy konwolucyjnej}{\url{https://arxiv.org/pdf/1511.08458.pdf#page=6}}
+\rysunek{conv-layer.png}{1}{Zasada działania warstwy konwolucyjnej}{\url{https://arxiv.org/pdf/1511.08458.pdf}}
 
 \subparagraph{Warstwy wyboru}
-Z angielskiego \quot{Pooling layer} - są to warstwy których głównym zadaniem jest redukcja wymiarów obrazu. Zasada działania jest podobna do Warstwy konwolucyjnej lecz zamiast macierzy jądra stosuje się prostszą funkcję redukującą wektor pikseli do jednego, na przykład poprzez wzięcie maksymalnej wartości z wektora (max-pooling) lub średniej (mean-pooling). W tej wartwie nie następuje żadne uczenie, ma ona za zadanie wyłącznie redukcje parametrów. \cite{CNN-intro}
+Z angielskiego \quot{Pooling layer} - są to warstwy których głównym zadaniem jest redukcja wymiarów obrazu. Zasada działania jest podobna do Warstwy konwolucyjnej lecz zamiast macierzy jądra stosuje się prostszą funkcję redukującą wektor pikseli do jednego, na przykład poprzez wzięcie maksymalnej wartości z wektora (max-pooling) lub średniej (mean-pooling). W tej warstwie nie następuje żadne uczenie, ma ona za zadanie wyłącznie redukcje parametrów. \cite{CNN-intro}
 \subparagraph{Warstwy porzucenia}
-Nie są to warstwy specyficzne dla KSN lecz są często są w nich wykorzystywane. Warstwa ta jest podobna do zwykłej warstwy "pełnej" lecz przy każdym przejściu odłączany jest pewien określony wcześniej procent połączeń. Głównym celem tej warstwy jest zapobieganie przeuczeniu sieci. \cite{CNN-expl}
+Nie są to warstwy specyficzne dla CNN lecz są często są w nich wykorzystywane. Warstwa ta jest podobna do zwykłej warstwy \quot{pełnej} lecz przy każdym przejściu treningowym odłączany jest pewien określony wcześniej procent połączeń. Głównym celem tej warstwy jest zapobieganie przeuczeniu sieci. \cite{CNN-expl}
 
 \subparagraph{Warstwa spłaszczania}
 Warstwa ta jest zazwyczaj umieszczana przed warstwą wyjścia. Jej głównym celem jest reorganizacja neuronów ze struktury wielowymiarowej do struktury jednowymiarowej dla łatwiejszego obliczania wartości neuronów w warstwie wyjścia.\cite{CNN-expl}
@@ -91,7 +92,7 @@ Warstwa ta jest zazwyczaj umieszczana przed warstwą wyjścia. Jej głównym cel
 \paragraph{Implementacje}
 \subparagraph{AlexNet}
 Jedna z najpopularniejszych implementacji algorytmu CNN. Model ten wygrał w konkursie ImageNet 2012 czym zwrócił uwagę świata informatycznego na zastosowanie sieci konwolucyjnych.
-Sieć ta zawiera 5 warstw konwolucyjnych, 2 warstwy 50\% odrzucenia oraz 1000 neuronów na wyjściu z czego każdy indentyfikował jedną klasę obiektu znalezioną na zdjęciu, nie była podawana pozycja obiektu, był on tylko identyfikowany. Do trenowania modelu zastosowano także różne techniki rozszerzające zbiór danych treningowych, na przykład odbicia lustrzane. \cite{AlexNet} \cite{ORdum-2}
+Sieć ta zawiera 5 warstw konwolucyjnych, 2 warstwy 50\% odrzucenia oraz 1000 neuronów na wyjściu z czego każdy identyfikował jedną klasę obiektu znalezioną na zdjęciu, nie była podawana pozycja obiektu, był on tylko identyfikowany. Do trenowania modelu zastosowano także różne techniki rozszerzające zbiór danych treningowych, na przykład odbicia lustrzane. \cite{AlexNet} \cite{ORdum-2}
 
 \rysunek{alex-net.png}{1}{Schemat struktury AlexNet wraz z wizualizacją warstw}{\url{http://vision03.csail.mit.edu/cnn_art/index.html}}
 
@@ -109,9 +110,9 @@ Obszarowe sieci neuronowe dzielą swoje działanie na 2 etapy: Propozycji obszar
 Ten model jak nazwa wskazuje jest bardzo podobny do oryginalnego R-CNN lecz stosuje on pewne optymalizacje. Pierwszą z nich jest danie obrazu wejściowego do przetworzenia zewnętrznemu modelowi CNN i użycie warstwy wyjściowej tego modelu do proponowania obszarów potencjalnego wystąpienia obiektu. Drugą optymalizacją jest zastosowanie modelu uczenia maszynowego do proponowania obszarów zamiast algorytmu szukania selektywnego.\cite{ORdum-1} Trzecią z ważniejszych optymalizacji jest wprowadzenie wspólnych warstw dla modelu wykrywania obszarów oraz dla modelu klasyfikacji, modele te trenuje się wtedy przemiennie. \cite{ORdum-3}
 
 \subsubsection{Modele detekcji w czasie rzeczywistym}
-Modele detekcji w czasie rzeczywistym (lub inaczej - modele \quot{szybkie}) nazwane są tak z powodu znacznego polepszenia czasu detekcji kosztem większej ilości błędów (błędy lokalizacji oraz błędy detekcji tła \cite[p.~6]{YOLOnet}). Stosowane są w systemach czasu rzeczywistego (np. Samochody samojeżdżące) gdzie czas wykonania modelu jest bardziej cenny niż jego precyzja. Za model szybki można uznać model który jest wstanie przetworzyć więcej niż 30 obrazów na sekundę (na danym sprzęcie).\cite[p.~5]{YOLOnet}
+Modele detekcji w czasie rzeczywistym (lub inaczej - modele \quot{szybkie}) nazwane są tak z powodu znacznego polepszenia czasu detekcji kosztem większej ilości błędów (błędy lokalizacji oraz błędy detekcji tła \cite[p.~6]{YOLOnet}). Stosowane są w systemach czasu rzeczywistego (np. Samochody samo-jeżdżące) gdzie czas wykonania modelu jest bardziej cenny niż jego precyzja. Za model szybki można uznać model który jest wstanie przetworzyć więcej niż 30 obrazów na sekundę (na danym sprzęcie).\cite[p.~5]{YOLOnet}
 \paragraph{YOLO}
-Sieć ta pomija etap rozpoznawania obszarów stosowany w sieciach typu R-CNN, zamiast tego obraz jest dzielony na $SxS$ równych bloków o stałej długości boku. Następnie dla każdego bloku ustanawiamy liczbę obiektów które mogą się znajdować w danym bloku którą oznaczymy jako $B$. Dla każdego bloku obliczane jest prawdopodobieństwo zawierania obiektu w jednym z zawieranych prostokątów i jeżeli prawdopodobieństwo jest odpowiednio duże określana jest przewidywana klasa obiektu. Warstwa wyjściowa dla każdego bloku składa się z $B$ piątek określających prostokąt okalający oraz prawdopodobieństwo wystąpienia obiektu oraz liście prawdopodobieństw wszystkich klas. Czyli wyjście całego modelu można określić jako tensor o wymiarach: $SxSx(5B+C)$ gdzie $C$ to liczba klas.\cite{ORdum-4} Dzięki znacznemu uproszczeniu metody generowania prostokątów okalających model YOLO oferuje znaczny spadek czasu detekcji przy jednoczesnym nieznacznym spadku precyzji. \cite{YOLOnet} 
+Sieć ta pomija etap rozpoznawania obszarów stosowany w sieciach typu R-CNN, zamiast tego obraz jest dzielony na $S \times S$ równych bloków o stałej długości boku. Następnie dla każdego bloku ustanawiamy liczbę obiektów które mogą się znajdować w danym bloku którą oznaczymy jako $B$. Dla każdego bloku obliczane jest prawdopodobieństwo zawierania obiektu w jednym z zawieranych prostokątów i jeżeli prawdopodobieństwo jest odpowiednio duże określana jest przewidywana klasa obiektu. Warstwa wyjściowa dla każdego bloku składa się z $B$ piątek określających prostokąt okalający oraz prawdopodobieństwo wystąpienia obiektu oraz liście prawdopodobieństw wszystkich klas. Czyli wyjście całego modelu można określić jako tensor o wymiarach: $S \times S \times (5B+C)$ gdzie $C$ to liczba klas.\cite{ORdum-4} Dzięki znacznemu uproszczeniu metody generowania prostokątów okalających model YOLO oferuje znaczny spadek czasu detekcji przy jednoczesnym nieznacznym spadku precyzji. \cite{YOLOnet} 
 \subsection{Generacja zdań}
 Drugą częścią w podpisywaniu obrazów jest generacja samego podpisu z danych o obiektach znajdujących się na obrazie wytworzonych przez model detekcyjny. Wymagane jest wygenerowanie pewnego ciągu słów ze statycznych danych. Do tej części zadania naturalnie nadają się rekursywne sieci neuronowe (RNN) które są wstanie zmieniać swoje wyjście ze względu na swój stan wewnętrzny a przez to są zdolne do generowania sekwencji.\cite{RNN-in-cg} W tym przypadku elementem ciągu będą słowa a ciągiem - całe zdanie.
 \subsubsection{Rekursywne sieci neuronowe}
@@ -137,7 +138,7 @@ Na rysunku \ref{canon-RNN.png} przedstawiono najprostszy neuron rekursywny gdzie
 gdzie $W$ jest rozumiane jako tensor wag.
 \rysunek{canon-RNN.png}{1}{Schemat najprostszego neuronu rekursywnego}{\url{https://arxiv.org/pdf/1808.03314.pdf}}
 \paragraph{Neurony pamięci długo-krótkotrwałej (LSTM - Long Short-Term Memory)}
-Mimo że dzięki swojej rekursywności neurony RNN mogą generować ciągi przedstawiają one jednak spore problemy podczas ich trenowania zwyczajowymi metodami propagacji wstecznej. Jeżeli generowane ciągi sa zbyt długie mogą wystąpić dwa zjawiska: eksplozja gradientu lub zanik gradientu. W przypadku pierwszego przypadku wagi mogą wachać się między tymi samymi wartościami i nie dążyć do żadnej wartości lub może nastąpić przepełnienie w jednostce obliczeniowej. W drugim przypadku wartości gradientu są tak małe że wytrenowanie sieci zajęło by nieopłacalną ilość czasu lub w ogóle nie było by możliwe z powodu ograniczonej precyzji kodowania liczb rzeczywistych w jednostce obliczeniowej. Efekty te spowodowane sa tym że przez rekursywność neuronu gradient jest zależny wykładniczo od obecnych wag oraz od zastosowanej funkcji aktywacji $G$ która jest zawsze mniejsza niż 1.\cite[p.~18]{LSTM-intro}
+Mimo że dzięki swojej rekursywności neurony RNN mogą generować ciągi przedstawiają one jednak spore problemy podczas ich trenowania zwyczajowymi metodami propagacji wstecznej. Jeżeli generowane ciągi są zbyt długie mogą wystąpić dwa zjawiska: eksplozja gradientu lub zanik gradientu. W przypadku pierwszego przypadku wagi mogą wahać się między tymi samymi wartościami i nie dążyć do żadnej wartości lub może nastąpić przepełnienie w jednostce obliczeniowej. W drugim przypadku wartości gradientu są tak małe że wytrenowanie sieci zajęło by nieopłacalną ilość czasu lub w ogóle nie było by możliwe z powodu ograniczonej precyzji kodowania liczb rzeczywistych w jednostce obliczeniowej. Efekty te spowodowane sa tym że przez rekursywność neuronu gradient jest zależny wykładniczo od obecnych wag oraz od zastosowanej funkcji aktywacji $G$ która jest zawsze mniejsza niż 1.\cite[p.~18]{LSTM-intro}
 
 Jako rozwiązanie tych problemów został zaproponowany neuron LSTM. Podczas projektowania LSTM zauważono że wykładnicza zależność gradientu od wag wynika z faktu iż wyjście neuronu $r$ zależy bezpośrednio od obecnego stanu neuronu $S$, wprowadzono więc dodatkowe parametry których zadaniem jest kontrolować wkład każdego z elementów do stanu oraz wyjścia neuronu.\cite[p.~22,23]{LSTM-intro} Elementy te zdefiniowane są następująco:
 \begin{equation*}
@@ -165,11 +166,13 @@ Dzięki zastosowaniu w neuronie współczynników  regulujących $g^s_i ,g^r_i, 
 \subsubsection{Kodowanie słów (Word Embedding)}
 Żeby móc przetwarzać słowa w sieciach neuronowych trzeba je uprzednio odpowiednio przekształcić do formy wektora liczb który łatwo poddaje się metodom uczenia maszynowego. Są dwie metody zrealizowania tego zadania: Model Skip-gram oraz model CBOW.
 \paragraph{CBOW}
-Nazwa jest skrótem z angielskiej nazwy: \textbf{Continuous bag-of-word}.
-Model przyjmuje na wejście $C$ słów które są przypisane wektorom liczbowym za pomocą kodowania \quot{1 z n}. Zbiór słów dobieranych na wejście jest związany z kolejnością występowania w tekście co tworzy swoisty kontekst występowania słowa. Na wyjściu zaś znajduje się jeden wektor o długości równej wielkości zbioru słów, a wartości tego wektora stanowią prawdopodobieństwo występowania słów w tym kontekście. Pomiędzy warstwami wejścia i wyjścia znajduje sie jedna warstwa ukryta o długości wynikowego kodowania słów. Metoda ta opiera się na transporcie danych z o wiele większej warstwy wejściowej przez małą warstwę ukrytą do warstwy wyjściowej. Jeżeli model zostanie dobrze wytrenowany (prawdopodobieństwa słów a warstwie wyjściowej będą odpowiadały rzeczywistym prawdopodobieństwom w warstwie wejściowej) wtedy oznacza to że model \quot{znalazł} sposób na zakodowanie informacji o słowie oraz jego kontekście do o wiele mniejszego wektora. Z tak wygenerowanego enkodera możemy dalej korzystać w sieciach neuronowych. \cite[p.~1,3]{word-embed}
+Nazwa jest skrótem z angielskiej nazwy: \textbf{Continuous Bag Of Words}.
+Model przyjmuje na wejście $C$ słów które są przypisane wektorom liczbowym za pomocą kodowania \quot{1 z n}. Zbiór słów dobieranych na wejście jest związany z kolejnością występowania w tekście co tworzy swoisty kontekst występowania słowa. Na wyjściu zaś znajduje się jeden wektor o długości równej wielkości zbioru słów, a wartości tego wektora stanowią prawdopodobieństwo występowania słów w tym kontekście. Pomiędzy warstwami wejścia i wyjścia znajduje się jedna warstwa ukryta o długości wynikowego kodowania słów. Metoda ta opiera się na transporcie danych z o wiele większej warstwy wejściowej przez małą warstwę ukrytą do warstwy wyjściowej. Jeżeli model zostanie dobrze wytrenowany (prawdopodobieństwa słów a warstwie wyjściowej będą odpowiadały rzeczywistym prawdopodobieństwom w warstwie wejściowej) wtedy oznacza to że model \quot{znalazł} sposób na zakodowanie informacji o słowie oraz jego kontekście do o wiele mniejszego wektora. Z tak wygenerowanego enkodera możemy dalej korzystać w sieciach neuronowych. \cite[p.~1,3]{word-embed}
 \rysunek{CBOW.png}{1}{Schemat modelu CBOW}{\url{https://arxiv.org/pdf/1411.2738.pdf}}
 \paragraph{Skip-gram}
 Model ten działa podobnie do modelu CBOW lecz w odwrotną stronę - warstwa wejściowa zawiera jedno słowo (także zakodowane sposobem \quot{1 z n}), warstwa wyjściowa zaś zawiera $C$ rozkładów prawdopodobieństwa dla słów które mogą znaleźć się w kontekście słowa wejściowego. Wagi warstwy ukrytej także w tym przypadku reprezentują pewne kodowanie słów zachowujące ich kontekst.
+
+\newpage
 
 \section{Opis algorytmu generowania podpisów}
 
@@ -177,8 +180,18 @@ Model ten działa podobnie do modelu CBOW lecz w odwrotną stronę - warstwa wej
 Ogólny zarys algorytmu prezentuje się w ten sposób: Do modelu przekazywane są dwa obiekty danych: pierwszym z nich jest obraz, drugim przypisany do obrazu opis. Zadaniem modelu będzie wygenerowanie na podstawie tych danych kolejnego słowa które będzie częścią opisu obrazu. Kompletny opis będzie tworzony przez powtórne wywoływanie modelu i podawaniu na wejście opisu uzupełnianego o generowane słowa. 
 
 Żeby wygenerować podpis do obrazu który nie ma opisu - innymi słowy jego opis jest pusty - dodajemy do używanego słownika dwa tokeny nie reprezentujące słów w opisie lecz reprezentujące początek i koniec zdania. Dzięki temu model będzie mógł łatwo oznajmić użytkownikowi że opis powinien się zakończyć, generując token końca opisu i również będzie można tworzyć nowe opisy podając na wejście zdanie które zawiera jeden token - token początku.
-\TODO{Architektury}
-Model będzie zbudowany w architekturze Łączeniowej (ang. Merge) w której oba obiekty danych przetwarzane są początkowo oddzielnie i wyniki tych przetworzeń łączone są dopiero w ostatnich warstwach produkując wyjście modelu. Architektura ta została wybrana ze względu na zadowalające wyniki przy mniejszej ilości wag od innych architektur.\cite[p.~25]{rnn-in-captiongen}
+
+Warto tutaj zwrócić uwagę na różne sposoby organizacji modelu które można podzielić ze względu na miejsce podawania na wejście danych z obrazu. Można wyróżnić 4 praktyczne architektury: \cite{rnn-in-captiongen}
+\begin{itemize}
+	\item \textit{Wejścia inicjalizującego} (ang. Init-inject) gdzie dane obrazu są podane jako wektor stanu warstwy rekursywnej do której następnie podawane są kolejne, znane słowa. Wyjście za warstwy rekursywnej można interpretować następnie jako nowe słowo. 
+	\item \textit{Wejścia poprzedzającego} (ang. Pre-inject) podobna do poprzedniej, gdzie dane obrazowe są podawane jako pierwsze wejście do warstwy rekursywnej, a następne wejścia to kolejne słowa.
+	\item \textit{Wejścia równorzędnego} (ang. Par-inject) Dane obrazowe są podawane razem z kolejnymi słowami do warstwy rekursywnej
+	\item \textit{Łączeniową} (ang. Merge) Dane tekstowe są przetwarzane przez sieć rekursywną oddzielnie od danych obrazowych, które są łączone z wynikiem warstwy rekursywnej w celu wygenerowania nowego słowa.
+\end{itemize}
+
+\rysunek{archs.pdf}{1}{Schematy architektur modeli generujących podpisy}{Własne}
+
+Model będzie zbudowany w architekturze Łączeniowej architektura ta została wybrana ze względu na zadowalające wyniki przy mniejszej ilości wag od innych architektur.\cite[p.~25]{rnn-in-captiongen}
 \rysunek{model_diagram.png}{1}{Schemat modelu implementowanego}{Własne}
 \subsubsection{Przetwarzanie obrazu}
 Żeby zostać efektywnie przetworzonym przez model obraz musi zostać zredukowany do pewnego wektora cech w którym każdy element będzie miał więcej informacji niż pojedynczy piksel oryginału. Do tego przetworzenia można użyć zmodyfikowanych modeli detekcji obiektów. Z oryginalnej architektury odcinamy ostatnie warstwy których neurony kodują informacje o wykrytych klasach i ich pozycjach. Oczywiście każdy model jest inny lecz można założyć że w neuronach pewnej głębszej warstwy modelu zawarta jest ogólna informacja o obrazie - przed wyspecyfikowaniem klas obiektów.
@@ -187,7 +200,7 @@ Do tej roli można stosować modele już wytrenowane ponieważ trafność używa
 \subsubsection{Przetwarzanie zdania}
 Na drugim wejściu podawany jest wektor słów występujących w opisie modelu. Słowa te muszą być uprzednio zakodowane - żeby to zrobić musimy dysponować pewnym słownikiem czyli zbiorem słów które model będzie mógł generować a także przyjmować w wejściu. Słownik taki najprościej jest skonstruować ze wszystkich słów występujących w zbiorze danych lecz praktycznym jest zawężenie go do najbardziej popularnych i przydatnych słów gdyż wielkość słownika bezpośrednio wpływa na ilość wag które trzeba wytrenować.
 
-Słowa następnie zostaną dalej skompresowane przez warstwę kodującą do postaci wektora który w założeniu jest elementem pewnej przestrzeni wektorowej zawierającej wszystkie słowa słownika. Wektor ten następnie podawany jest do warstwy Rekursywnej (RNN) której stan jest zachowywany przez wszyskie iteracje tworzące jeden opis i resetowany przed generacją następnego opisu.
+Słowa następnie zostaną dalej skompresowane przez warstwę kodującą do postaci wektora który w założeniu jest elementem pewnej przestrzeni wektorowej zawierającej wszystkie słowa słownika. Wektor ten następnie podawany jest do warstwy Rekursywnej (RNN) której stan jest zachowywany przez wszystkie iteracje tworzące jeden opis i resetowany przed generacją następnego opisu.
 \rysunek{merge-stage.png}{1}{Schemat etapu syntezy wyniku gdzie: $C$ - rozmiar wektora cech, $N$ - rozmiar wektora słowa, $D$ - rozmiar słownika}{Własne}
 \subsubsection{Synteza wyniku}
 W wyniku osobnego przetworzenia obrazu i zdania mamy teraz odpowiednio wektor cech obrazu i wektor wyjściowy z warstwy RNN. Żeby otrzymać słowo wynikowe musimy te dwa wektory złączyć w jeden a następnie przetransformować ten wektor do wektora prawdopodobieństw poszczególnych słów. Za słowo wynikowe bierzemy to słowo które ma największe prawdopodobieństwo.
@@ -199,33 +212,38 @@ W wyniku osobnego przetworzenia obrazu i zdania mamy teraz odpowiednio wektor ce
 Wybrane słowo z największym prawdopodobieństwem dodaje się do zdania opisowego i ponownie daje się na wejście modelu w celu otrzymania kolejnego słowa. Proces ten powtarzany jest aż do momentu wygenerowania przez model tokenu kończącego. Słowa zawarte między tokenami początku i końca tworzą wygenerowany opis obrazu.
 
 Należy zwrócić uwagę że ostatnie czynności nie są wykonywane przez sieci neuronowe lecz przez standardowy kod programu. Sam model więc mimo że jest kluczową częścią całego systemu, nie jest wystarczający do spełnienia celu jakim jest wygenerowanie podpisu. Dlatego też wyjścia z modelu nie można interpretować jako wynik ostateczny, jak na przykład w modelach detekcyjnych gdzie tensor wyjściowy stanowy rozwiązanie problemu. Dopiero odpowiednie zastosowanie modelu i interpretacja jego wyników pozwala zrealizować cel zadania. 
-\subsection{Metoda oceny modelu}
-\TODO{BLEU}
+
+\newpage
+
 \section{Implementacja modelu}
 \subsection{Użyte narzędzia}
-\paragraph*{Python} Jest to dynamicznie typowany język wysokiego poziomu popularny w zastosowaniach sztucznej inteligencji. , dlatego też jest szeroki wybór bibliotek asystujących w tworzeniu algorytmów uczenia maszynowego gdyż główne zasady algorytmu można wyspecyfikować w warstwie wysokiej abstrakcji a krytyczne obliczenia są wykonywane w zoptymalizowanych bibliotekach.
-\paragraph*{Tensorflow} Jest to biblioteka stworzona przez Google która umożliwia tworzenie i wykonywanie skierowanych grafów obliczeń. Jej głównym zastosowaniem jest uczenie maszynowe jednak nie jest do tego ograniczona.
-\paragraph*{Keras} Jest to biblioteka zawierająca odpowiednie klasy abstrakcji do łatwego budowania i trenowania sieci neuronowych. Stanowi ona swojego rodzaju interfejs do bibliotek wykonujących grafy obliczeń. W tym przypadku wykorzystywana jest biblioteka Tensorflow ale Keras wspiera również biblioteki Theano i CNTK Microsoftu.
-\paragraph*{NTLK} \TODO{NTLK}
+\begin{description}
+	\item[Python]     \hfill \\ Jest to dynamicznie typowany język wysokiego poziomu popularny w zastosowaniach sztucznej inteligencji. Jest też szeroki wybór zoptymalizowanych bibliotek asystujących w tworzeniu algorytmów uczenia maszynowego.
+	\item[Tensorflow] \hfill \\ Jest to biblioteka stworzona przez Google która umożliwia tworzenie i wykonywanie skierowanych grafów obliczeń\cite{Tensorflow}. Jej głównym zastosowaniem jest uczenie maszynowe jednak nie jest do tego ograniczona.
+	\item[Keras]      \hfill \\ Jest to biblioteka zawierająca odpowiednie klasy abstrakcji do łatwego budowania i trenowania sieci neuronowych.\cite{Keras} Stanowi ona swojego rodzaju interfejs do bibliotek wykonujących grafy obliczeń. W tym przypadku wykorzystywana jest biblioteka Tensorflow ale Keras wspiera również biblioteki Theano i CNTK Microsoftu.
+	\item[NLTK]       \hfill \\ (\textit{Natural Language ToolKit}) Jest to zbiór bibliotek do przetwarzania języka naturalnego w programach Python.\cite{NLTK} W tej pracy biblioteka ta jest wykorzystywana wyłącznie do wykonania oceny modelu metodą BLEU. 
+\end{description}
 \subsection{Struktura kodu}
 Ze względu na chęć uniezależnienia metody treningu i ewaluacji od konkretnej architektury modelu, oraz zapewnienie łatwości wymiany modelów składających się na model główny, kod został podzielony na moduły funkcjonalne.
-\paragraph*{files.py} W module tym zawarta są funkcje związane z operacjami na systemie plików. Operacje te są wydzielone ze względu na uproszczenie diagnozy błędów oraz obsługę skrajnych przypadków.
-\paragraph*{stage.py} Funkcjonalności w tym module ułatwiają wypisywanie informacji o stanie oraz o czasie trwania programu.
-\paragraph*{utils.py} Funkcje pomocnicze o generalnego zastosowanie - głównie operacje na strukturach danych.
-\paragraph*{mlutils.py} Ładowanie zestawów danych oraz przygotowanie ich do użycia przy trenowaniu modelu.
-\paragraph*{images.py} Moduł ten zawiera funkcje ładujące obrazy ze zbioru danych, a także funkcje wstępnego ich przetwarzania przez sieć konwolucyjną.
-\paragraph*{words.py} W tym module znajdują się funkcje przetwarzania opisów przyporządkowanych do obrazów. Tworzony jest tu słownik, tokenizer oraz sekwencje tokenów.
-\paragraph*{models.py} Ten moduł służy do odczytu,zapisu i ewaluacji sieci neuronowych. Przetwarzane są tu sieci neuronowe do wstępnego przetwarzania obrazów oraz sieć generująca opisy.  
-\paragraph*{main.py} Moduł agregujący funkcjonalności z pozostałych modułów w kilka funkcji realizujących główne czynności tj.: Trenowanie i Ocena modelu, ładowanie zbioru danych i ewaluacja modelu dla konkretnego przypadku.
+\begin{description}
+	\item[files.py]   \hfill \\ W module tym zawarta są funkcje związane z operacjami na systemie plików. Operacje te są wydzielone ze względu na uproszczenie diagnozy błędów oraz obsługę skrajnych przypadków.
+	\item[stage.py]   \hfill \\ Funkcjonalności w tym module ułatwiają wypisywanie informacji o stanie oraz o czasie trwania programu.
+	\item[utils.py]   \hfill \\ Funkcje pomocnicze o generalnego zastosowanie - głównie operacje na strukturach danych.
+	\item[mlutils.py] \hfill \\ Ładowanie zestawów danych oraz przygotowanie ich do użycia przy trenowaniu modelu.
+	\item[images.py]  \hfill \\ Moduł ten zawiera funkcje ładujące obrazy ze zbioru danych, a także funkcje wstępnego ich przetwarzania przez sieć konwolucyjną.
+	\item[words.py]   \hfill \\ W tym module znajdują się funkcje przetwarzania opisów przyporządkowanych do obrazów. Tworzony jest tu słownik, tokenizer oraz sekwencje tokenów.
+	\item[models.py]  \hfill \\ Ten moduł służy do odczytu,zapisu i ewaluacji sieci neuronowych. Przetwarzane są tu sieci neuronowe do wstępnego przetwarzania obrazów oraz sieć generująca opisy.  
+	\item[main.py]    \hfill \\ Moduł agregujący funkcjonalności z pozostałych modułów w kilka funkcji realizujących główne czynności tj.: Trenowanie i Ocena modelu, ładowanie zbioru danych i ewaluacja modelu dla konkretnego przypadku.
 
-Powyższe moduły są częścią modułu głównego z którego korzysta plik główny \textit{imcap.py}. W tym pliku głównym ustawiana jest konfiguracja i lokalizcje plików ze zbiorem danych oraz plików pośrednich.
-\TODO{Diagram zależności modułów}
+\end{description}
+
+Powyższe moduły są częścią modułu głównego z którego korzysta plik główny \textit{imcap.py}. W tym pliku głównym ustawiana jest konfiguracja i lokalizacje plików ze zbiorem danych oraz plików pośrednich.
+
 \subsection{Wstępne przetworzenie danych}
-\TODO{Wyjaśnienie dlaczego możemy preprocesować dane a także formę do jakiej te dane sprowadzmy}
-W celu przeprowadzenie treningu modelu na zbiorze danych, najpierw należy przetransformować surowe dane do postaci odpowiednich wektorów które będzie można podać na wejście budowanej sieci.
+W celu przeprowadzenie treningu modelu na zbiorze danych, najpierw należy przetransformować surowe dane do postaci odpowiednich wektorów liczbowych które będzie można podać na wejście budowanej sieci.
 
 W przypadku danych tekstowych jedynym wymaganiem odnośnie zbioru danych jest to aby każdy obraz miał przynajmniej jeden podpis.
-\footnote{Nie zakładam tu konkretnego formatu danych, ponieważ różni się on pomiędzy zbiorami.} Produkty pośrednie które będą wytworzone podczas tego procesu są następujące:
+\footnote{Konkretny format danych jest różny pomiędzy zbiorami dlatego też nie jest on częścią wymagań co do zbioru danych} Produkty pośrednie które będą wytworzone podczas tego procesu są następujące:
 \begin{itemize}
   \item Słownik zawierające wszystkie słowa w tekście
   \item Funkcja kodująca słowa do tokenów oraz funkcja dekodująca.
@@ -237,7 +255,7 @@ Gdzie: \textbf{Token} - wektor kodujący słowo - unikalny w obrębie danego sł
 
 Proces przetwarzania tekstu składa się z następujących etapów (w kolejności):
 \begin{enumerate}
-	\item Wydzielenie z teksu pojedyńczych opisów.
+	\item Wydzielenie z teksu pojedynczych opisów.
 	\item Sanitacja tekstu - oczyszczenie opisów ze znaków interpunkcyjnych, zmiana liter na małe.
 	\item Wprowadzenie znaczników początku i końca zdania.
 	\item Przyporządkowanie opisów do obrazów.
@@ -247,72 +265,191 @@ Proces przetwarzania tekstu składa się z następujących etapów (w kolejnośc
 \end{enumerate}
 Pary sekwencja-token są konstruowane w następujący sposób. Jeżeli założymy że mamy sekwencje tokenów określoną jako listę
 $[t_1,t_2,\cdots, t_n]$ to możemy z niej utworzyć $n-1$ par: $([t_1,\cdots,t_{k}],t_{k+1})$ gdzie $k \in <0;n-1>$.
-Pary tę będą stanowiły tekstową część danych na których trenowany bedzie model.
+Pary tę będą stanowiły tekstową część danych na których trenowany będzie model. Proces ten jest zwizualizowany na rysunku \ref{sequences2.pdf}
 
-\TODO{diagram rozkładu na sekwencje i tokeny}
+\rysunek{sequences2.pdf}{0.8}{Schemat tworzenia par sekwencja-token z sekwencji tokenów}{Własne}
 
 Przetworzenie danych obrazowych jest znacznie prostsze, a końcowym produktem jest wyłącznie:
 \begin{itemize}
 	\item Przyporządkowanie obrazu do jego wektora cech.
 \end{itemize}
-W teori przetworzenie obrazu nie jest jeszcze konieczne na tym etapie, wektor cech można obliczyć tuż przed podaniem go na wejście modelu. Jednak obliczenie wektora cech w tym momencie przyspieszy znacznie trening modelu gdyż dla tego samego obrazu (czyli wektora cech) model zostanie wywołany kilkanaście lub nawet kilkadziesiąt razy. Obliczanie za każdym razem wektora cech byłoby zbędne gdyż nie zmieniałby się on z kolejnymi wywołaniami modelu generującego, dlatego też obliczamy wszystkie wektory cech dla całego zbioru danych przed rozpoczęciem treningu.
+W teorii przetworzenie obrazu nie jest jeszcze konieczne na tym etapie, wektor cech można obliczyć tuż przed podaniem go na wejście modelu. Jednak obliczenie wektora cech w tym momencie przyspieszy znacznie trening modelu gdyż dla tego samego obrazu (czyli wektora cech) model zostanie wywołany kilkanaście lub nawet kilkadziesiąt razy. Obliczanie za każdym razem wektora cech byłoby zbędne gdyż nie zmieniałby się on z kolejnymi wywołaniami modelu generującego, dlatego też obliczamy wszystkie wektory cech dla całego zbioru danych przed rozpoczęciem treningu.
 
-Wektor cech będzie bezpośrednio otrzymywany z sieci konwolucyjnej zastosowanej do przetworzenia. Żeby wprowadzić obraz na wejście takiej sieci należy go najpierw odpowiednio przekrztałcić, a więc większość kroków przekrztałcających dane obrazowe będzie uzależniona od wyboru modelu przetwarzającego. W tym przypadku opiszę kroki przetwarzania dla modelu \textbf{VGG-16}, ale wszystkie kroki są podobne dla różnych modeli a różnią się tylko parametrami takimi jak rozdzielczość czy sposób normalizacji.
+Wektor cech będzie bezpośrednio otrzymywany z sieci konwolucyjnej zastosowanej do przetworzenia. Żeby wprowadzić obraz na wejście takiej sieci należy go najpierw odpowiednio przekształcić, a więc większość kroków przekształcających dane obrazowe będzie uzależniona od wyboru modelu przetwarzającego. W tym przypadku opiszę kroki przetwarzania dla modelu \textbf{VGG-16}, ale wszystkie kroki są podobne dla różnych modeli a różnią się tylko parametrami takimi jak rozdzielczość czy sposób normalizacji.
 
 Proces przetwarzania tekstu składa się z następujących etapów (w kolejności):
 \begin{enumerate}
 	\item Przeskalowanie obrazu do rozdzielczości 224x224.
-	\item Zamiana kolejnością kanałów koloru {R,G,B} -> {B,G,R}
+	\item Zamiana kolejnością kanałów koloru \{R,G,B\} -> \{B,G,R\}
 	\item Normalizacja wartości kolorów względem zbioru danych z ImageNet (odjęcie średniej)
 	\item Ewaluacja wyniku sieci konwolucyjnej w celu otrzymania wektora cech
 \end{enumerate}
 
-Po krokach wstępnego pretworzenia danych zarówno obrazowych jak i tekstowych, możemy złączyć ze sobą oba zbiory przez unikalny identyfikator obrazu w zbiorze danych. Wynikowy zbiór będzie można bezpośrednio wykorzystać do treningu modelu.
+Po krokach wstępnego przetworzenia danych zarówno obrazowych jak i tekstowych, możemy złączyć ze sobą oba zbiory przez unikalny identyfikator obrazu w zbiorze danych. Wynikowy zbiór będzie można bezpośrednio wykorzystać do treningu modelu.
 
-\subsection{Konstrukcja i trening modelu}
-\TODO{Krótka sekcja o tym jak model jest konstruowany i sposobie trenowania}
-Model jest konstruowany za pomocą biblioteki Keras
+\subsection{Konstrukcja modelu}
+\rysunek{model-final.pdf}{1}{Schemat modelu skonstruowanego.}{Własne}
+ Na rysunku \ref{model-final.pdf} został przedstawiony schemat modelu który został skonstruowany w ramach tej pracy i jego właściwości będą omawiane w następnych sekcjach. Tam gdzie podano wymiary w postaci [$x$/$y$] $x$ oznacza wymiar zastosowany przy zbiorze \textit{Flickr 8k}, a $y$ wymiar zastosowany przy zbiorze \textit{Flickr 30k}\footnote{Zmiany w wymiarach warstw są konieczne żeby uwzględnić inne rozmiary słownika w obu zbiorach}. Tam gdzie podany jest współczynnik odrzucenia - podczas treningu zerowany jest pewien procent wejść warstwy (poza treningiem wejścia nie są odrzucane).
 \subsection{Ocena modelu}
-\TODO{Krótka sekcja o ocenie modelu (może być usunięte jeżeli za krótka}
-Model będzie oceniany używając metryki BLEU \cite{BLEU}, która jest wykorzystywana do oceny systemów tłumaczących. W tym przypadku można traktować
+Model będzie oceniany używając metryki BLEU\cite{BLEU}, która jest wykorzystywana do oceny systemów tłumaczących. W tym przypadku można traktować
 obraz jako pewne wyrażenie w innym języku komunikacji, a podpisy w zbiorze danych jako tłumaczenia o których wiemy że są poprawne.
 
 BLEU jest liczbą w przedziale [0;1] która określa zgodność tłumaczenia proponowanego do tłumaczeń referencyjnych.
 Wynik ten jest obliczany na postawie podobieństw sekwencji słów między tłumaczeniem proponowanym a tłumaczeniami referencyjnymi w zakresie danego zbioru danych.
 
+Wynik ten oblicza się porównując wystąpienia w obu tłumaczeniach takich samych n-gramów (uporządkowanych krotek słów). Niezależnie porównuje się n-gramy aż do wybranego stopnia maksymalnego $N$, następnie w celu uzyskania ostatecznego wyniku agreguje się wyniki jako ważoną sumę logarytmów w potędze $e$, z wagami równymi $\frac{1}{N}$. Otrzymuje się w ten sposób wartość $\textrm{BLEU}_N$. W praktyce używa się stopni od 1 do 4 gdyż według eksperymentów najlepiej oddają one poziom podobieństwa tłumaczeń wskazywany przez ludzi.\cite[p.~4]{BLEU}
+
+\newpage
 
 \section{Trening i testy modelu}
 \subsection{Zbiory danych}
-\TODO{Opis Flickr8k, Flickr30k}
+\begin{description}
+	\item[Flickr 8K] \hfill \\ Zbiór danych opublikowany w 2013 roku.
+	Składa się on z około 8 tysięcy obrazów o wysokiej rozdzielczości oraz 5 zdań opisujących każdy z obrazów.
+	Obrazy pochodzą ze strony \url{https://flickr.com}.
+	Opisy obrazów zostały stworzone przez ludzi korzystając z platformy \textit{Amazon Mechanical Turk}\cite{Flickr8k}.
+	Ten zbiór danych dobrze nadaje się do prototypowania modeli oraz oceny skuteczności algorytmów uczenia we wczesnych fazach projektu i tak też został wykorzystany w tej pracy.
+	\item[Flickr 30K] \hfill \\ Zbiór danych poszerzający zbiór Flickr 8K, opublikowany w 2014 roku.
+	Obrazy oraz opisy obrazów zostały uzyskane w sposób analogiczny do Flickr 8k \cite{Flickr30k}. Ten zbiór został wykorzystany to wytrenowania modelu po procesie prototypowania.
+\end{description}
 
 \subsection{Trening modelu}
-\TODO{Grafy z treningu na różnych datasetach - obserwacje i spostrzeżenia}
+Model jest trenowany za pomocą algorytmu propagacji wstecznej \cite{BackProp} z użyciem algorytmu ADAM \cite{ADAM} (będącym modyfikacją algorytmu SGD - \textit{Stochastyczne zejście w gradiencie}) do minimalizacji funkcji błędu.
+
+\paragraph{Funkcja błędu}
+Funkcją błędu która jest minimalizowana jest funkcja kategoryzowanej entropii produktowej - \textit{Categorical Cross Entropy}. Funkcja oblicza stopień podobieństwa dla dwóch dyskretnych rozkładów prawdopodobieństwa w następujący sposób: 
+\begin{equation*}
+L = - \sum_{i=0}^N y_iln(\hat{y_i})
+\end{equation*}
+gdzie $L$ - wartość funkcji błędu, $N$ - liczba kategorii, $y_i$ - znane prawdopodobieństwo dla i-tej kategorii, $\hat{y_i}$ - otrzymane z modelu prawdopodobieństwo dla i-tej kategorii. W praktyce podczas treningu znane rozkłady mają wartość niezerową tylko dla jednej kategorii (słowa), więc suma redukuje się tylko do jednego składnika: $-ln(\hat{y_k})$, gdzie $k$ równe jest indeksowi klasy rzeczywistej.
+
+\paragraph{Dokładność kategoryczna}
+Dokładność kategoryczna jest odmianą zwykłej dokładności gdzie do stwierdzenia czy klasyfikacja jest poprawna czy nie - porównuje się indeksy wartości maksymalnych, a nie ich dokładne wartości. Jako że za wynik modelu jest brana wartość maksymalna - jest to najodpowiedniejsza metryka dla budowanego modelu.
+
+\paragraph{Proces treningu}
+Model był trenowany na dwóch wymienionych zbiorach danych podzielonych na trzy podzbiory: treningowy, walidacyjny i testowy; w stosunku około 80:10:10. Podzbiór treningowy był wykorzystywany do wyliczenia wag, podzbiór walidacyjny służył do określania postępu treningu modelu, na zbiorze testowym była wyliczana metryka BLEU.
+
+Proces trenowania trwał dopóki wartość funkcji błędu na zbiorze walidacyjnym poprawiała się (malała). W praktyce, w obu przypadkach oznaczało to około 5/6 iteracji przez cały zbiór. Wykresy metryk z treningu na obu zbiorach sa zwizualizowane na Rysunku \ref{loss}. Najlepsze wartości dokładności jakie udało się uzyskać po zakończonym treningu to w przypadku obu zbiorów około $0.25 - 0.27$, co oznacza że ponad $70\%$ słów zostało przewidzianych błędnie. Jako że metryki modelu nie ulegają poprawie przy dalszym treningu można założyć że żeby je zwiększyć trzeba zwiększyć liczbę parametrów (przez zwiększenie wymiarów warstw) lub zmienić architekturę modelu, jednak oznaczało by to znaczne zwiększenie czasu trenowania dla tych samych danych.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}[b]{.45\linewidth}
+\includegraphics[width=\linewidth ,keepaspectratio]{./files/dokladnosc.png}
+	\caption{Wykres funkcji dokładności dla treningu na zbiorze Flickr 8K i Flickr 30K}\label{f8kloss}
+\end{subfigure}
+\begin{subfigure}[b]{.45\linewidth}
+	\includegraphics[width=\linewidth ,keepaspectratio]{./files/blad.png}
+	\caption{Wykres wartości funkcji błędu dla treningu na zbiorze Flickr 8K i Flickr 30K}\label{f30kloss}
+\end{subfigure}
+\caption{Wykresy metryk treningów \textit{Źródło: Własne}}
+\label{loss}
+\end{figure}
+
 \subsection{Testy i ocena modelu}
-\TODO{Porównanie BLEU między datasetami i innymi modelami}
-\section{Podsumowanie}
-\subsection{Propozycje zmian}
-\subsection{Przykłady}
-\TODO{Parę przykładów podpisów na obrazkach}
+\paragraph{Ocena podpisów wybranych przykładów}
+Poniżej zostało przedstawione kilka zdjęć ze zbioru testowego podpisanych przez model do oceny trafności przez czytelnika.
+
+Można zobaczyć że model generalnie poprawnie rozpoznaje pierwszoplanowe obiekty zawarte na zdjęciach, oraz czynności przedstawiane. Niedokładności pojawiają się przy opisywaniu otoczenia oraz konkretnych szczegółów związanych z obiektami. Oczywiście niektóre zdjęcia są podpisywane zupełnie błędnie ( przykład c) z Rysunku \ref{examples}), ale można zauważyć że niektóre obiekty z otocznia zostały uwzględnione w opisie, nie można tu więc mówić o zupełnym braku związku podpisu z obrazem.
+\begin{figure}[h]
+\centering
+\begin{subfigure}[b]{.45\linewidth}
+\includegraphics[width=\linewidth]{./files/dog_jumping.jpg}
+	\caption{dog is running through water}
+\end{subfigure}
+\begin{subfigure}[b]{.45\linewidth}
+	\includegraphics[width=\linewidth]{./files/football.jpg}
+	\caption{two men in white uniforms are playing soccer}
+\end{subfigure}
+
+\begin{subfigure}[b]{.45\linewidth}
+	\includegraphics[width=\linewidth]{./files/red_kayak.jpg}
+	\caption{man in blue shirt is surfing the water}
+\end{subfigure}
+\begin{subfigure}[b]{.45\linewidth}
+	\includegraphics[width=\linewidth]{./files/dog_in_forest.jpg}
+	\caption{dog is running through the grass}
+\end{subfigure}
+\caption{Przykładowe obrazy ze zbioru \textit{Flickr 8k} podpisane przez model. \textit{Źródło: Badania własne}}
+\label{examples}
+\end{figure}
+
+\paragraph{Ocena BLEU}
+W tabeli \ref{bleu-wynik} można zobaczyć porównanie między modelami różnego typu: 
+\begin{description}
+\item[Show and Tell] Model o podobnej architekturze i zasadzie działania, lecz z większą ilością parametrów oraz innymi procedurami przygotowania danych tekstowych.
+\item[Show, Attend and Tell] Model z zaimplementowanym mechanizmem uwagi dzięki któremu do wygenerowania słowa są używane istotniejsze cechy obrazu.
+\item[Arxiv 1412.2306] Model z architekturą Init-inject, oraz większą ilością parametrów.
+\end{description}
+Z porównania można także zauważyć że trening modelu na większym zbiorze danych zwiększył oceny BLEU modelu o parę punktów procentowych. W innych modelach efekt ten jest mniejszy lub nawet odwrotny. 
+
+\newpage
+
+\tabela{bleu-wynik}{Porównanie wyników BLEU między modelami}{Własne}{l|cccc|cccc}{
+\hline
+BLEU-N (w p.p.) & \multicolumn{4}{c|}{Flickr 8K} & \multicolumn{4}{c}{Flickr 30K} \\ \hline
+Nazwa Modelu     & B-1    & B-2   & B-3   & B-4   & B-1    & B-2   & B-3   & B-4   \\ \hline
+Arxiv 1412.2306\cite{model1}  & 57,9   & 38,3  & 24,5  & 16,0  & 57,3   & 36,9  & 24,0  & 15,7  \\
+Show and Tell\cite{model3}& 63     & 41    & 27    & ---   & 66,3   & 42,3  & 27,7  & ---   \\
+Show, Attend and Tell\cite{model2} & 67     & 45,7  & 31,4  & 21,3  & 66,9   & 43,9  & 29,6  & 19,9  \\
+Model własny        & \textbf{37,0}   & \textbf{19,3}  & \textbf{11,6}  &  \textbf{4,4}  & \textbf{43,0}   & \textbf{21,6}  & \textbf{13,5}  &  \textbf{5,6}  \\ \hline
+}
+
+\newpage
+
+\section*{Podsumowanie}
+Głównym celem tej pracy dyplomowej było stworzenie systemu opartego o uczenie maszynowe, który będzie generował zrozumiałe dla człowieka podpisy dla obrazów. System taki został opracowany i oceniony, przy czym uzyskany wynik jest porównywalny z innymi modelami wykonującymi to samo zadanie. Cel ten został więc osiągnięty, a ponad to:
+\begin{itemize}
+	\item	Zostały omówione metody uczenia maszynowego wykorzystywane przy przetwarzaniu obrazów (CNN), a także przetwarzania tekstu (RNN, CBOW). Zostało wyjaśnione ich działanie oraz dane zostały przykłady ich użycia w zaimplementowanych modelach.
+    \item	Opisany został algorytm korzystający z wymienionych metod uczenia maszynowego do wytworzenia podpisu do zdjęcia.
+    \item	Zaimplementowany został model sztucznej inteligencji, funkcje przetwarzające dane oraz wcześniej opisany algorytm podpisywania. Podpisy są zrozumiałe przez ludzi i odnoszą się do obiektów znajdujących się na obrazie.
+    \item	Model do zastosowania w algorytmie został wytrenowany na wybranych zbiorach danych spełniających kryteria. Została wyliczona ocena modelu według wybranego algorytmu, która została porównana z innymi modelami generującymi podpisy.
+\end{itemize}
+\subsection*{Propozycje zmian}
+\begin{description}
+	\item[Wzbogacanie danych] \hfill \\
+	W celu zwiększenia zbioru danych treningowych, można przeprowadzić pewne operacje na danych wejściowych dla których będziemy znali poprawne dane wejściowe, generując w ten sposób nowe punkty danych na których model mógłby się uczyć. Przykładową operacją może być np. Odbicie lustrzane obrazu - przy opisach które nie używają sformułowań \textit{prawo}/\textit{lewo} taka zmiana nie powinna zmienić opisu.
+	\item[Ograniczenie słownika] \hfill \\
+	Jednym z ograniczeń dokładności modelu jest konieczność zakodowania słowa do wektora. W tym przypadku do wektora o długości 128 trzeba zakodować przestrzeń do nawet 20 000 słów. Jeżeli ze słownika wyeliminować słowa rzadko używane i literówki (co jest możliwe przy podpisywaniu przez ludzi) np. odrzucić wszystkie opisy które zawierają słowa występujące tylko 1 lub 2 razy w całym zbiorze danych, prawdopodobnie można by uzyskać większą dokładność modelu.
+	\item[Mechanizm uwagi] \hfill \\
+	W obecnym modelu za wektor cech brany jest wektor wyjściowy z ostatniej warstwy pełnej z sieci detekcyjnej. Przy wzięciu danych o obrazie z jeszcze dalszej już konwolucyjnej warstwy modelu, oraz zastosowanie na nich RNN, możemy stworzyć tak zwany model uwagi który zwracałby inny podzbiór cech obrazu za każdym słowem - tym samym ograniczając ilość \quot{zbędnych} danych o obrazie w wektorze cech.
+\end{description}
 \newpage
 
 \begin{thebibliography}{}
 \addcontentsline{toc}{section}{\refname}
-\bibitem{rnn-in-captiongen} TANTI, MARC et al. "Where to put the image in an image caption generator". Natural Language Engineering 24. 3(2018): 467–489.
-\bibitem{YOLOnet}Joseph Redmon, et al. "You Only Look Once: Unified, Real-Time Object Detection." (2016).
-\bibitem{word-embed}Xin Rong, . "word2vec Parameter Learning Explained." (2016).
-\bibitem{word2vec}Tomas Mikolov, et al. "Distributed Representations of Words and Phrases and their Compositionality." (2013).
-\bibitem{LSTM-intro}Sherstinsky, Alex. "Fundamentals of Recurrent Neural Network (RNN) and Long Short-Term Memory (LSTM) network". Physica D: Nonlinear Phenomena 404. (2020): 132306.
-\bibitem{nn-basic}Du, K.-L et al. "Recurrent Neural Networks." (2014). 
-\bibitem{main-model}Oriol Vinyals, et al. "Show and Tell: A Neural Image Caption Generator." (2015).
-\bibitem{RNN-in-cg}Marc Tanti, et al. "What is the Role of Recurrent Neural Networks (RNNs) in an Image Caption Generator?." (2017).
-\bibitem{CNN-expl}Wang, Zijie J. et al. "CNN Explainer: Learning Convolutional Neural Networks with Interactive Visualization". IEEE Transactions on Visualization and Computer Graphics 27. 2(2021): 1396–1406.
-\bibitem{ORdum-1}Weng, Lilian. "Object Detection for Dummies Part 1: Gradient Vector, HOG, and SS". lilianweng.github.io/lil-log. (2017).
-\bibitem{ORdum-2}Weng, Lilian. "Object Detection for Dummies Part 2: CNN, DPM and Overfeat". lilianweng.github.io/lil-log. (2017).
-\bibitem{ORdum-3}Weng, Lilian. "Object Detection for Dummies Part 3: R-CNN Family". lilianweng.github.io/lil-log. (2017).
-\bibitem{ORdum-4}Weng, Lilian. "Object Detection Part 4: Fast Detection Models". lilianweng.github.io/lil-log. (2018).
-\bibitem{Overfeat}Pierre Sermanet, et al. "OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks." (2014).
-\bibitem{AlexNet}Krizhevsky, Alex et al. "ImageNet Classification with Deep Convolutional Neural Networks." Advances in Neural Information Processing Systems. Curran Associates, Inc.,
-\bibitem{CNN-intro}Keiron O'Shea, et al. "An Introduction to Convolutional Neural Networks." (2015).
-\bibitem{BLEU} todo
+\bibitem{rnn-in-captiongen} TANTI, MARC et al. \quot{Where to put the image in an image caption generator}. Natural Language Engineering 24. 3(2018): 467–489.
+\bibitem{YOLOnet}Joseph Redmon, et al. \quot{You Only Look Once: Unified, Real-Time Object Detection.} (2016).
+\bibitem{word-embed}Xin Rong, . \quot{word2vec Parameter Learning Explained.} (2016).
+\bibitem{word2vec}Tomas Mikolov, et al. \quot{Distributed Representations of Words and Phrases and their Compositionality.} (2013).
+\bibitem{LSTM-intro}Sherstinsky, Alex. \quot{Fundamentals of Recurrent Neural Network (RNN) and Long Short-Term Memory (LSTM) network}. Physica D: Nonlinear Phenomena 404. (2020): 132306.
+\bibitem{nn-basic}Du, K.-L et al. \quot{Recurrent Neural Networks.} (2014). 
+\bibitem{main-model}Oriol Vinyals, et al. \quot{Show and Tell: A Neural Image Caption Generator.} (2015).
+\bibitem{RNN-in-cg}Marc Tanti, et al. \quot{What is the Role of Recurrent Neural Networks (RNNs) in an Image Caption Generator?.} (2017).
+\bibitem{CNN-expl}Wang, Zijie J. et al. \quot{CNN Explainer: Learning Convolutional Neural Networks with Interactive Visualization}. IEEE Transactions on Visualization and Computer Graphics 27. 2(2021): 1396–1406.
+\bibitem{ORdum-1}Weng, Lilian. \quot{Object Detection for Dummies Part 1: Gradient Vector, HOG, and SS}. lilianweng.github.io/lil-log. (2017).
+\bibitem{ORdum-2}Weng, Lilian. \quot{Object Detection for Dummies Part 2: CNN, DPM and Overfeat}. lilianweng.github.io/lil-log. (2017).
+\bibitem{ORdum-3}Weng, Lilian. \quot{Object Detection for Dummies Part 3: R-CNN Family}. lilianweng.github.io/lil-log. (2017).
+\bibitem{ORdum-4}Weng, Lilian. \quot{Object Detection Part 4: Fast Detection Models}. lilianweng.github.io/lil-log. (2018).
+\bibitem{Overfeat}Pierre Sermanet, et al. \quot{OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks.} (2014).
+\bibitem{AlexNet}Krizhevsky, Alex et al. \quot{ImageNet Classification with Deep Convolutional Neural Networks.} Advances in Neural Information Processing Systems. Curran Associates, Inc.
+\bibitem{CNN-intro}Keiron O'Shea, et al. \quot{An Introduction to Convolutional Neural Networks.} (2015).
+\bibitem{BLEU} Papineni, W.J. (2002). Bleu: a Method for Automatic Evaluation of Machine Translation. In Proceedings of the 40th Annual Meeting of the Association for Computational Linguistics (pp. 311–318). Association for Computational Linguistics.
+\bibitem{ADAM} Diederik P. Kingma, & Jimmy Ba. (2017). Adam: A Method for Stochastic Optimization. 
+\bibitem{Flickr8k} Micah Hodosh, et al. \quot{Framing image description as a ranking task:
+Data, models and evaluation metrics} (2013).
+\bibitem{Flickr30k} Young, J. (2014). From image descriptions to visual denotations: New similarity metrics for semantic inference over event descriptions. Transactions of the Association for Computational Linguistics, 2, 67–78.
+\bibitem{BackProp}Rumelhart, D., Hinton, G., and Williams, R. (1986a). Learning representations by
+back-propagating errors. Nature, 323, 533–536
+\bibitem{NLTK} Bird, Steven, Edward Loper and Ewan Klein (2009), \quot{Natural Language Processing with Python.} O’Reilly Media Inc.
+\bibitem{Keras} Chollet, F., & others. (2015). Keras. \url{https://keras.io}.
+\bibitem{Tensorflow} Martín Abadi, & others \quot{TensorFlow: Large-scale machine learning on heterogeneous systems}
+(2015) Software available from tensorflow.org.
+\bibitem{model1} Andrej Karpathy, & Li Fei-Fei. (2015). Deep Visual-Semantic Alignments for Generating Image Descriptions.
+\bibitem{model2}Kelvin Xu, Jimmy Ba, Ryan Kiros, Kyunghyun Cho, Aaron Courville, Ruslan Salakhutdinov, Richard Zemel, & Yoshua Bengio. (2016). Show, Attend and Tell: Neural Image Caption Generation with Visual Attention.
+\bibitem{model3}Oriol Vinyals, Alexander Toshev, Samy Bengio, & Dumitru Erhan. (2015). Show and Tell: A Neural Image Caption Generator.
+\bibitem{CNN-cat}Press release. NobelPrize.org. Nobel Prize Outreach AB 2022. Thu. 20 Jan 2022. <https://www.nobelprize.org/prizes/medicine/1981/press-release/> 
+
+
+
 \end{thebibliography}
 \end{document}

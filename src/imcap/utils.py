@@ -3,6 +3,7 @@ Pure python utilities for general use.
 '''
 from typing import Any, AnyStr, Dict, List, Tuple
 import itertools, sys
+from datetime import datetime
 IntList2D = List[List[int]]
 IntList = List[int]
 def flatten(t : List[List[Any]]) -> List[Any]:
@@ -67,4 +68,7 @@ def print_sizes(*args):
         tsize += size
         print(f'Size of {label} = {float(size)/(1024.0*1024.0*1024.0):.2f} GB')
     print(f'Total size of in-memory data = {float(tsize)/(1024.0*1024.0*1024.0):.2f} GB')
+
+def now_str():
+    return datetime.now().strftime("%Y-%m-%d-%H%M%S")
 
